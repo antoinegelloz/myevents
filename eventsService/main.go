@@ -4,13 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"reactapp/eventsService/configuration"
-	"reactapp/eventsService/persistence"
-	"reactapp/eventsService/service"
+
+	"github.com/agelloz/reach/eventsService/configuration"
+	"github.com/agelloz/reach/eventsService/persistence"
+	"github.com/agelloz/reach/eventsService/service"
 )
 
 func main() {
-	confPath := flag.String("conf", `.\configuration\config.json`, "flag to set the path to the configuration json file")
+	confPath := flag.String("conf", `.\configuration\config.json`,
+		"flag to set the path to the configuration json file")
 	flag.Parse()
 	conf, _ := configuration.ExtractConfiguration(*confPath)
 	fmt.Println("Connecting to database...")

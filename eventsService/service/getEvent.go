@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reactapp/eventsService/models"
 	"strings"
+
+	"github.com/agelloz/reach/eventsService/models"
 
 	"github.com/gorilla/mux"
 )

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reactapp/eventsService/models"
+	"github.com/agelloz/reach/eventsService/models"
 )
 
 func (eh *eventsServiceHandler) addEventHandler(w http.ResponseWriter, r *http.Request) {

@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	"reactapp/eventsService/models"
-	"reactapp/eventsService/mongodb"
+	"github.com/agelloz/reach/eventsService/models"
+	"github.com/agelloz/reach/eventsService/mongodb"
 )
 
 // DBTYPE is type

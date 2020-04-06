@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"reactapp/eventsService/persistence"
+	"github.com/agelloz/reach/eventsService/persistence"
 )
 
 var (

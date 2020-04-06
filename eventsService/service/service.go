@@ -2,7 +2,8 @@ package service
 
 import (
 	"net/http"
-	"reactapp/eventsService/persistence"
+
+	"github.com/agelloz/reach/eventsService/persistence"
 
 	"github.com/gorilla/mux"
 )

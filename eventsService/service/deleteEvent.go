@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"reactapp/eventsService/models"
+	"github.com/agelloz/reach/eventsService/models"
 	"strings"
 
 	"github.com/gorilla/mux"

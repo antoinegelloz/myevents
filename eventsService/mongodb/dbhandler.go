@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	"reactapp/eventsService/models"
+	"github.com/agelloz/reach/eventsService/models"
 
 	"gopkg.in/mgo.v2/bson"
 )
