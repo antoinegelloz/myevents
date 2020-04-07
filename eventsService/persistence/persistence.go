@@ -11,8 +11,6 @@ type DBTYPE string
 const (
 	// MONGODB is
 	MONGODB DBTYPE = "mongodb"
-	// DYNAMODB is
-	DYNAMODB DBTYPE = "dynamodb"
 )
 
 // DBHandler is used to communicate with the database

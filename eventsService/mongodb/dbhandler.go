@@ -40,7 +40,7 @@ func (mgoLayer *DBLayer) GetEventByID(id []byte) (models.Event, error) {
 func (mgoLayer *DBLayer) GetEventByName(name string) (models.Event, error) {
 	s := mgoLayer.session.Copy()
 	defer s.Close()
-	e := models.Event{}
+	var e models.Event
 	err := s.DB(DB).C(EVENTS).Find(bson.M{"name": name}).One(&e)
 	return e, err
 }
@@ -49,7 +49,7 @@ func (mgoLayer *DBLayer) GetEventByName(name string) (models.Event, error) {
 func (mgoLayer *DBLayer) GetAllEvents() ([]models.Event, error) {
 	s := mgoLayer.session.Copy()
 	defer s.Close()
-	events := []models.Event{}
+	var events []models.Event
 	err := s.DB(DB).C(EVENTS).Find(nil).All(&events)
 	return events, err
 }

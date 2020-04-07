@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-go get github.com/gorilla/mux
-go get gopkg.in/mgo.v2
-go get github.com/stretchr/testify/assert
+set -e
+
+go get
 #go run main.go

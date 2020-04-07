@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func (eh *eventsServiceHandler) getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
-	events, err := eh.dbhandler.GetAllEvents()
+func (eh *EventsServiceHandler) getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
+	events, err := eh.dbHandler.GetAllEvents()
 	if err != nil {
 		http.Error(w, "Cannot get all events", http.StatusInternalServerError)
 		return

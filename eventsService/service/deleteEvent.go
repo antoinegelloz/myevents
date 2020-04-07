@@ -4,13 +4,14 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"github.com/agelloz/reach/eventsService/models"
 	"strings"
+
+	"github.com/agelloz/reach/eventsService/models"
 
 	"github.com/gorilla/mux"
 )
 
-func (eh *eventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *http.Request) {
+func (eh *EventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nameOrID, ok := vars["nameOrID"]
 	if !ok {
@@ -26,7 +27,7 @@ func (eh *eventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *htt
 	var err error
 	switch strings.ToLower(nameOrID) {
 	case "name":
-		event, err = eh.dbhandler.GetEventByName(nameOrIDValue)
+		event, err = eh.dbHandler.GetEventByName(nameOrIDValue)
 		if err != nil {
 			http.Error(w, "Cannot get event to delete by name", http.StatusNotFound)
 			return
@@ -35,7 +36,7 @@ func (eh *eventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *htt
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {
-			event, err = eh.dbhandler.GetEventByID(id)
+			event, err = eh.dbHandler.GetEventByID(id)
 		}
 		if err != nil {
 			http.Error(w, "Cannot find event to delete by ID", http.StatusNotFound)
@@ -43,7 +44,7 @@ func (eh *eventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *htt
 		}
 		fmt.Printf("Got event to delete by ID %s\n", event.ID)
 	}
-	err = eh.dbhandler.DeleteEvent(event)
+	err = eh.dbHandler.DeleteEvent(event)
 	if nil != err {
 		http.Error(w, fmt.Sprintf("Cannot add event ID: %s", event.ID), http.StatusInternalServerError)
 		return

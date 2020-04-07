@@ -5,8 +5,6 @@ import "gopkg.in/mgo.v2"
 const (
 	// DB - database name
 	DB = "myevents"
-	// USERS - users
-	USERS = "users"
 	// EVENTS - events
 	EVENTS = "events"
 )

@@ -3,8 +3,8 @@ package configuration
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"github.com/agelloz/reach/eventsService/persistence"
+	"os"
 )
 
 var (
@@ -20,10 +20,10 @@ var (
 
 // ServiceConfig is
 type ServiceConfig struct {
-	DBType       persistence.DBTYPE `json:"databasetype"`
-	DBConnection string             `json:"dbconnection"`
-	Endpoint     string             `json:"api_endpoint"`
-	TLSEndpoint  string             `json:"api_tlsendpoint"`
+	DBType       persistence.DBTYPE `json:"dbType"`
+	DBConnection string             `json:"dbConnection"`
+	Endpoint     string             `json:"endpoint"`
+	TLSEndpoint  string             `json:"tlsEndpoint"`
 }
 
 // ExtractConfiguration is
@@ -36,7 +36,8 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 	}
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Configuration file not found. Continuing with default values.")
+		fmt.Println("Configuration file not found. Continuing with default values:")
+		fmt.Printf("%+v\n", conf)
 		return conf, err
 	}
 	err = json.NewDecoder(file).Decode(&conf)

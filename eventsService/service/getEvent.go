@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (eh *eventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.Request) {
+func (eh *EventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nameOrID, ok := vars["nameOrID"]
 	if !ok {
@@ -28,7 +28,7 @@ func (eh *eventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.R
 	var err error
 	switch strings.ToLower(nameOrID) {
 	case "name":
-		event, err = eh.dbhandler.GetEventByName(nameOrIDValue)
+		event, err = eh.dbHandler.GetEventByName(nameOrIDValue)
 		if err != nil {
 			http.Error(w, "Cannot get event by name", http.StatusNotFound)
 			return
@@ -37,7 +37,7 @@ func (eh *eventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.R
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {
-			event, err = eh.dbhandler.GetEventByID(id)
+			event, err = eh.dbHandler.GetEventByID(id)
 		}
 		if err != nil {
 			http.Error(w, "Cannot get event by ID", http.StatusNotFound)
@@ -46,5 +46,8 @@ func (eh *eventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.R
 		fmt.Printf("Got event by ID %s\n", event.ID)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=utf8")
-	json.NewEncoder(w).Encode(&event)
+	err = json.NewEncoder(w).Encode(&event)
+	if err != nil {
+		http.Error(w, "Cannot encode events to JSON", http.StatusInternalServerError)
+	}
 }
