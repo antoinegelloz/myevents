@@ -33,7 +33,7 @@ func (eh *EventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.R
 			http.Error(w, "Cannot get event by name", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("Got event by name %s\n", nameOrID)
+		fmt.Printf("Got event by name %s\n", nameOrIDValue)
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {

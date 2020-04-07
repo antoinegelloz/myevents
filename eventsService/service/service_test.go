@@ -1,7 +1,10 @@
 package service
 
 import (
-	"fmt"
+	"bytes"
+	"github.com/agelloz/reach/eventsService/configuration"
+	"github.com/agelloz/reach/eventsService/persistence"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -9,34 +12,59 @@ import (
 )
 
 func TestSimple_API_Usage(t *testing.T) {
-	eh := NewEventsServiceHandler()
+	dbh, _ := persistence.NewPersistenceLayer(configuration.DBTypeDefault, configuration.DBConnectionDefault)
+	var h = &EventsServiceHandler{
+		dbHandler:   dbh,
+		endpoint:    configuration.EndpointDefault,
+		tlsEndpoint: configuration.TLSEndpointDefault,
+	}
 
-	req1, err1 := http.NewRequest(http.MethodGet, "/events", nil)
-	if err1 != nil {
-		t.Fatal(err1)
-	}
-	rr1 := httptest.NewRecorder()
-	h1 := http.HandlerFunc(eh.getAllEventsHandler)
-	h1.ServeHTTP(rr1, req1)
-	assert.Equal(t, http.StatusOK, rr1.Code)
-	fmt.Print(rr1.Body.String())
-/*
-	req2, err2 := http.NewRequest("POST", "/events", bytes.NewBuffer([]byte(`{"name":"test"}`)))
-	if err2 != nil {
-		t.Fatal(err2)
-	}
-	rr2 := httptest.NewRecorder()
-	h2 := http.HandlerFunc(eh.addEventHandler)
-	h2.ServeHTTP(rr2, req2)
-	assert.Equal(t, http.StatusOK, rr2.Code)
-*/
-	req3, err3 := http.NewRequest(http.MethodGet, "/events/name/test", nil)
-	if err3 != nil {
-		t.Fatal(err3)
-	}
-	rr3 := httptest.NewRecorder()
-	h3 := http.HandlerFunc(eh.getEventHandler)
-	h3.ServeHTTP(rr3, req3)
-	assert.Equal(t, http.StatusOK, rr3.Code)
-	fmt.Print(rr3.Body.String())
+	t.Run("Get all events", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, "/events", nil)
+		assert.NoError(t, err)
+		w := httptest.NewRecorder()
+		h.getAllEventsHandler(w, req)
+		resp := w.Result()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("Add event by name circle test", func(t *testing.T) {
+		var jsonStr = []byte(`{"name":"circle test"}`)
+		req, err := http.NewRequest(http.MethodPost, "/events", bytes.NewBuffer(jsonStr))
+		assert.NoError(t, err)
+		w := httptest.NewRecorder()
+		h.addEventHandler(w, req)
+		resp := w.Result()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("Get event by name circle test", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, "/events", nil)
+		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
+		assert.NoError(t, err)
+		w := httptest.NewRecorder()
+		h.getEventHandler(w, req)
+		resp := w.Result()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("Delete event by name circle test", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodDelete, "/events", nil)
+		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
+		assert.NoError(t, err)
+		w := httptest.NewRecorder()
+		h.deleteEventHandler(w, req)
+		resp := w.Result()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("Get event by name circle test", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, "/events", nil)
+		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
+		assert.NoError(t, err)
+		w := httptest.NewRecorder()
+		h.getEventHandler(w, req)
+		resp := w.Result()
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
 }

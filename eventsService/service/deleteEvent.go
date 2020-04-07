@@ -32,7 +32,7 @@ func (eh *EventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *htt
 			http.Error(w, "Cannot get event to delete by name", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("Found event to delete by name %s\n", nameOrID)
+		fmt.Printf("Found event to delete by name %s\n", nameOrIDValue)
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {
