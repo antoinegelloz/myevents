@@ -3,11 +3,13 @@ package service
 import (
 	"flag"
 	"fmt"
-	"github.com/agelloz/reach/eventsService/configuration"
-	"github.com/gorilla/mux"
+	"github.com/streadway/amqp"
 	"net/http"
 
+	"github.com/agelloz/reach/eventsService/configuration"
 	"github.com/agelloz/reach/eventsService/persistence"
+	"github.com/agelloz/reach/msgqueue/msgqueue_amqp"
+	"github.com/gorilla/mux"
 )
 
 type EventsServiceHandler struct {
@@ -22,6 +24,17 @@ func ServeAPI() (chan error, chan error) {
 		"flag to set the path to the configuration json file")
 	flag.Parse()
 	conf, _ := configuration.ExtractConfiguration(*confPath)
+
+	conn, err := amqp.Dial(conf.AMQPMessageBroker)
+	if err != nil {
+		panic(err)
+	}
+
+	emitter, err := msgqueue_amqp.NewAMQPEventEmitter(conn)
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("Connecting to database...")
 	dh, _ := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	eh := &EventsServiceHandler{
@@ -39,7 +52,7 @@ func ServeAPI() (chan error, chan error) {
 	httpsErrChan := make(chan error)
 	fmt.Println("eventsService listening...")
 	go func() {
-		httpsErrChan <- http.ListenAndServeTLS(eh.tlsEndpoint, "cert.pem", "key.pem", r)
+		httpsErrChan <- http.ListenAndServeTLS(eh.tlsEndpoint, "certificate/cert.pem", "certificate/key.pem", r)
 	}()
 	go func() {
 		httpErrChan <- http.ListenAndServe(eh.endpoint, r)

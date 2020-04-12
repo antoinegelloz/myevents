@@ -3,8 +3,9 @@ package configuration
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/agelloz/reach/eventsService/persistence"
 	"os"
+
+	"github.com/agelloz/reach/eventsService/persistence"
 )
 
 var (
@@ -16,14 +17,17 @@ var (
 	EndpointDefault = "localhost:8181"
 	// TLSEndpointDefault is the default endpoint listening to HTTPS
 	TLSEndpointDefault = "localhost:9191"
+	// AMPQURLDefault is the default url for the AMPQ broker
+	AMPQURLDefault = "amqp://guest:guest@localhost:5672"
 )
 
 // ServiceConfig is
 type ServiceConfig struct {
-	DBType       persistence.DBTYPE `json:"dbType"`
-	DBConnection string             `json:"dbConnection"`
-	Endpoint     string             `json:"endpoint"`
-	TLSEndpoint  string             `json:"tlsEndpoint"`
+	DBType            persistence.DBTYPE `json:"dbType"`
+	DBConnection      string             `json:"dbConnection"`
+	Endpoint          string             `json:"endpoint"`
+	TLSEndpoint       string             `json:"tlsEndpoint"`
+	AMQPMessageBroker string             `json:"amqp_message_broker"`
 }
 
 // ExtractConfiguration is
@@ -33,6 +37,7 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		DBConnectionDefault,
 		EndpointDefault,
 		TLSEndpointDefault,
+		AMPQURLDefault,
 	}
 	file, err := os.Open(filename)
 	if err != nil {
@@ -41,5 +46,8 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		return conf, err
 	}
 	err = json.NewDecoder(file).Decode(&conf)
+	if broker := os.Getenv("AMQP_URL"); broker != "" {
+		conf.AMQPMessageBroker = broker
+	}
 	return conf, err
 }
