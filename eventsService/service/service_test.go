@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"github.com/agelloz/reach/eventsService/configuration"
 	"github.com/agelloz/reach/eventsService/persistence"
+	"github.com/agelloz/reach/msgqueue/msgqueue_amqp"
 	"github.com/gorilla/mux"
+	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -13,10 +15,19 @@ import (
 
 func TestSimple_API_Usage(t *testing.T) {
 	dbh, _ := persistence.NewPersistenceLayer(configuration.DBTypeDefault, configuration.DBConnectionDefault)
+	conn, err := amqp.Dial(configuration.AMPQURLDefault)
+	if err != nil {
+		panic(err)
+	}
+	ee, err := msgqueue_amqp.NewAMQPEventEmitter(conn)
+	if err != nil {
+		panic(err)
+	}
 	var h = &EventsServiceHandler{
-		dbHandler:   dbh,
-		endpoint:    configuration.EndpointDefault,
-		tlsEndpoint: configuration.TLSEndpointDefault,
+		dbHandler:    dbh,
+		endpoint:     configuration.EndpointDefault,
+		tlsEndpoint:  configuration.TLSEndpointDefault,
+		eventEmitter: ee,
 	}
 
 	t.Run("Get all events", func(t *testing.T) {
@@ -26,6 +37,25 @@ func TestSimple_API_Usage(t *testing.T) {
 		h.getAllEventsHandler(w, req)
 		resp := w.Result()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("Get event by name circle test", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, "/events", nil)
+		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
+		assert.NoError(t, err)
+		w := httptest.NewRecorder()
+		h.getEventHandler(w, req)
+		resp := w.Result()
+		/*
+			for resp.StatusCode == 200 {
+				req, err := http.NewRequest(http.MethodDelete, "/events", nil)
+				req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
+				assert.NoError(t, err)
+				w := httptest.NewRecorder()
+				h.deleteEventHandler(w, req)
+				resp = w.Result()
+			}*/
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 
 	t.Run("Add event by name circle test", func(t *testing.T) {

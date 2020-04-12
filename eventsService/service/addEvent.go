@@ -1,9 +1,12 @@
 package service
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/agelloz/reach/eventsService/contracts"
 	"net/http"
+	"time"
 
 	"github.com/agelloz/reach/eventsService/models"
 )
@@ -21,4 +24,18 @@ func (eh *EventsServiceHandler) addEventHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 	fmt.Printf("Added new event ID:%d\n", id)
+
+	msg := contracts.EventCreatedEvent{
+		ID:         hex.EncodeToString(id),
+		Name:       event.Name,
+		LocationID: event.Location.ID.String(),
+		Start:      time.Unix(event.StartDate, 0),
+		End:        time.Unix(event.EndDate, 0),
+	}
+	err = eh.eventEmitter.Emit(&msg)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Cannot emit event ID: %s", id), http.StatusInternalServerError)
+		return
+	}
+	fmt.Print("New event successfully emitted\n")
 }

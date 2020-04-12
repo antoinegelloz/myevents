@@ -3,6 +3,7 @@ package service
 import (
 	"flag"
 	"fmt"
+	"github.com/agelloz/reach/msgqueue"
 	"github.com/streadway/amqp"
 	"net/http"
 
@@ -13,9 +14,10 @@ import (
 )
 
 type EventsServiceHandler struct {
-	dbHandler   persistence.DBHandler
-	endpoint    string
-	tlsEndpoint string
+	dbHandler    persistence.DBHandler
+	endpoint     string
+	tlsEndpoint  string
+	eventEmitter msgqueue.EventEmitter
 }
 
 // ServeAPI is
@@ -29,8 +31,7 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		panic(err)
 	}
-
-	emitter, err := msgqueue_amqp.NewAMQPEventEmitter(conn)
+	ee, err := msgqueue_amqp.NewAMQPEventEmitter(conn)
 	if err != nil {
 		panic(err)
 	}
@@ -38,9 +39,10 @@ func ServeAPI() (chan error, chan error) {
 	fmt.Println("Connecting to database...")
 	dh, _ := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	eh := &EventsServiceHandler{
-		dbHandler:   dh,
-		endpoint:    conf.Endpoint,
-		tlsEndpoint: conf.TLSEndpoint,
+		dbHandler:    dh,
+		endpoint:     conf.Endpoint,
+		tlsEndpoint:  conf.TLSEndpoint,
+		eventEmitter: ee,
 	}
 	r := mux.NewRouter()
 	s := r.PathPrefix("/events").Subrouter()
