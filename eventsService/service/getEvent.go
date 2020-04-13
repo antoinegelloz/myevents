@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (eh *EventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.Request) {
+func (eh *EventsServiceHandler) GetEventHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nameOrID, ok := vars["nameOrID"]
 	if !ok {
@@ -28,7 +28,7 @@ func (eh *EventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.R
 	var err error
 	switch strings.ToLower(nameOrID) {
 	case "name":
-		event, err = eh.dbHandler.GetEventByName(nameOrIDValue)
+		event, err = eh.DbHandler.GetEventByName(nameOrIDValue)
 		if err != nil {
 			http.Error(w, "Cannot get event by name", http.StatusNotFound)
 			return
@@ -37,7 +37,7 @@ func (eh *EventsServiceHandler) getEventHandler(w http.ResponseWriter, r *http.R
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {
-			event, err = eh.dbHandler.GetEventByID(id)
+			event, err = eh.DbHandler.GetEventByID(id)
 		}
 		if err != nil {
 			http.Error(w, "Cannot get event by ID", http.StatusNotFound)

@@ -3,15 +3,15 @@ package service
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/agelloz/reach/contracts"
+	"github.com/agelloz/reach/eventsService/models"
 	"net/http"
 	"strings"
-
-	"github.com/agelloz/reach/eventsService/models"
 
 	"github.com/gorilla/mux"
 )
 
-func (eh *EventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *http.Request) {
+func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nameOrID, ok := vars["nameOrID"]
 	if !ok {
@@ -27,7 +27,7 @@ func (eh *EventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *htt
 	var err error
 	switch strings.ToLower(nameOrID) {
 	case "name":
-		event, err = eh.dbHandler.GetEventByName(nameOrIDValue)
+		event, err = eh.DbHandler.GetEventByName(nameOrIDValue)
 		if err != nil {
 			http.Error(w, "Cannot get event to delete by name", http.StatusNotFound)
 			return
@@ -36,7 +36,7 @@ func (eh *EventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *htt
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {
-			event, err = eh.dbHandler.GetEventByID(id)
+			event, err = eh.DbHandler.GetEventByID(id)
 		}
 		if err != nil {
 			http.Error(w, "Cannot find event to delete by ID", http.StatusNotFound)
@@ -44,10 +44,21 @@ func (eh *EventsServiceHandler) deleteEventHandler(w http.ResponseWriter, r *htt
 		}
 		fmt.Printf("Got event to delete by ID %s\n", event.ID)
 	}
-	err = eh.dbHandler.DeleteEvent(event)
+	err = eh.DbHandler.DeleteEvent(event)
 	if nil != err {
-		http.Error(w, fmt.Sprintf("Cannot add event ID: %s", event.ID), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Cannot delete event ID: %s", event.ID), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Delete event ID:%s\n", event.ID)
+	fmt.Printf("Deleted event from database ID:%s\n", event.ID)
+
+	msg := contracts.EventDeletedEvent{
+		ID: event.ID.String(),
+	}
+	err = eh.EventEmitter.Emit(&msg)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Cannot emit deletion of event ID: %s",
+			event.ID.String()), http.StatusInternalServerError)
+		return
+	}
+	fmt.Print("Deletion of event successfully emitted\n")
 }

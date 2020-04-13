@@ -1,8 +1,7 @@
 package mongodb
 
 import (
-	"github.com/agelloz/reach/eventsService/models"
-
+	"github.com/agelloz/reach/bookingService/models"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -12,10 +11,6 @@ func (mgoLayer *DBLayer) AddEvent(e models.Event) ([]byte, error) {
 	defer s.Close()
 	if !e.ID.Valid() {
 		e.ID = bson.NewObjectId()
-	}
-	// let's assume the method below checks if the ID is valid for the location object of the event
-	if !e.Location.ID.Valid() {
-		e.Location.ID = bson.NewObjectId()
 	}
 	return []byte(e.ID), s.DB(DB).C(EVENTS).Insert(e)
 }
@@ -52,4 +47,39 @@ func (mgoLayer *DBLayer) GetAllEvents() ([]models.Event, error) {
 	var events []models.Event
 	err := s.DB(DB).C(EVENTS).Find(nil).All(&events)
 	return events, err
+}
+
+// AddBooking adds a booking
+func (mgoLayer *DBLayer) AddBooking(b models.Booking) ([]byte, error) {
+	s := mgoLayer.session.Copy()
+	defer s.Close()
+	if !b.ID.Valid() {
+		b.ID = bson.NewObjectId()
+	}
+	return []byte(b.ID), s.DB(DB).C(BOOKINGS).Insert(b)
+}
+
+// DeleteBooking deletes a booking
+func (mgoLayer *DBLayer) DeleteBooking(b models.Booking) error {
+	s := mgoLayer.session.Copy()
+	defer s.Close()
+	return s.DB(DB).C(BOOKINGS).Remove(b)
+}
+
+// GetAllBookings returns all bookings
+func (mgoLayer *DBLayer) GetAllBookings() ([]models.Booking, error) {
+	s := mgoLayer.session.Copy()
+	defer s.Close()
+	var bookings []models.Booking
+	err := s.DB(DB).C(BOOKINGS).Find(nil).All(&bookings)
+	return bookings, err
+}
+
+// GetBookingByID returns an booking
+func (mgoLayer *DBLayer) GetBookingByID(id []byte) (models.Booking, error) {
+	s := mgoLayer.session.Copy()
+	defer s.Close()
+	b := models.Booking{}
+	err := s.DB(DB).C(BOOKINGS).FindId(bson.ObjectId(id)).One(&b)
+	return b, err
 }

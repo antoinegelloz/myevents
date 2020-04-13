@@ -16,7 +16,7 @@ func (a *amqpEventEmitter) setup() error {
 		return err
 	}
 	defer channel.Close()
-	return channel.ExchangeDeclare("events", "topic", true, false, false, false, nil)
+	return channel.ExchangeDeclare("eventsExchange", "topic", true, false, false, false, nil)
 }
 
 func NewAMQPEventEmitter(conn *amqp.Connection) (msgqueue.EventEmitter, error) {
@@ -37,16 +37,16 @@ func (a *amqpEventEmitter) Emit(event msgqueue.Event) error {
 	}
 
 	newChan, err := a.connection.Channel()
-	if err != nil { 
-		return err 
-	} 
- 
+	if err != nil {
+		return err
+	}
+
 	defer newChan.Close()
- 
-  	msg := amqp.Publishing{ 
-  	  Headers:     amqp.Table{"x-event-name": event.EventName()},
-  	  Body:        jsonDoc, 
-  	  ContentType: "application/json", 
-  	}
-  	return newChan.Publish("events", event.EventName(), false, false, msg)
+
+	msg := amqp.Publishing{
+		Headers:     amqp.Table{"x-event-name": event.EventName()},
+		Body:        jsonDoc,
+		ContentType: "application/json",
+	}
+	return newChan.Publish("eventsExchange", event.EventName(), false, false, msg)
 }

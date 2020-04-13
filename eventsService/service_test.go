@@ -1,9 +1,10 @@
-package service
+package main
 
 import (
 	"bytes"
 	"github.com/agelloz/reach/eventsService/configuration"
 	"github.com/agelloz/reach/eventsService/persistence"
+	"github.com/agelloz/reach/eventsService/service"
 	"github.com/agelloz/reach/msgqueue/msgqueue_amqp"
 	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
@@ -23,18 +24,18 @@ func TestSimple_API_Usage(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	var h = &EventsServiceHandler{
-		dbHandler:    dbh,
-		endpoint:     configuration.EndpointDefault,
-		tlsEndpoint:  configuration.TLSEndpointDefault,
-		eventEmitter: ee,
+	var h = &service.EventsServiceHandler{
+		DbHandler:    dbh,
+		Endpoint:     configuration.EndpointDefault,
+		TLSEndpoint:  configuration.TLSEndpointDefault,
+		EventEmitter: ee,
 	}
 
 	t.Run("Get all events", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, "/events", nil)
 		assert.NoError(t, err)
 		w := httptest.NewRecorder()
-		h.getAllEventsHandler(w, req)
+		h.GetAllEventsHandler(w, req)
 		resp := w.Result()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
@@ -44,7 +45,7 @@ func TestSimple_API_Usage(t *testing.T) {
 		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
 		assert.NoError(t, err)
 		w := httptest.NewRecorder()
-		h.getEventHandler(w, req)
+		h.GetEventHandler(w, req)
 		resp := w.Result()
 		/*
 			for resp.StatusCode == 200 {
@@ -63,7 +64,7 @@ func TestSimple_API_Usage(t *testing.T) {
 		req, err := http.NewRequest(http.MethodPost, "/events", bytes.NewBuffer(jsonStr))
 		assert.NoError(t, err)
 		w := httptest.NewRecorder()
-		h.addEventHandler(w, req)
+		h.AddEventHandler(w, req)
 		resp := w.Result()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
@@ -73,7 +74,7 @@ func TestSimple_API_Usage(t *testing.T) {
 		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
 		assert.NoError(t, err)
 		w := httptest.NewRecorder()
-		h.getEventHandler(w, req)
+		h.GetEventHandler(w, req)
 		resp := w.Result()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
@@ -83,7 +84,7 @@ func TestSimple_API_Usage(t *testing.T) {
 		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
 		assert.NoError(t, err)
 		w := httptest.NewRecorder()
-		h.deleteEventHandler(w, req)
+		h.DeleteEventHandler(w, req)
 		resp := w.Result()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
@@ -93,7 +94,7 @@ func TestSimple_API_Usage(t *testing.T) {
 		req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
 		assert.NoError(t, err)
 		w := httptest.NewRecorder()
-		h.getEventHandler(w, req)
+		h.GetEventHandler(w, req)
 		resp := w.Result()
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})

@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func (eh *EventsServiceHandler) GetAllEventsHandler(w http.ResponseWriter, r *http.Request) {
-	events, err := eh.DbHandler.GetAllEvents()
+func (eh *BookingServiceHandler) GetAllEventsHandler(w http.ResponseWriter, r *http.Request) {
+	events, err := eh.DBHandler.GetAllEvents()
 	if err != nil {
 		http.Error(w, "Cannot get all events", http.StatusInternalServerError)
 		return

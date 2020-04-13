@@ -14,10 +14,10 @@ import (
 )
 
 type EventsServiceHandler struct {
-	dbHandler    persistence.DBHandler
-	endpoint     string
-	tlsEndpoint  string
-	eventEmitter msgqueue.EventEmitter
+	DbHandler    persistence.DBHandler
+	Endpoint     string
+	TLSEndpoint  string
+	EventEmitter msgqueue.EventEmitter
 }
 
 // ServeAPI is
@@ -25,8 +25,10 @@ func ServeAPI() (chan error, chan error) {
 	confPath := flag.String("conf", `.\configuration\config.json`,
 		"flag to set the path to the configuration json file")
 	flag.Parse()
-	conf, _ := configuration.ExtractConfiguration(*confPath)
-
+	conf, err := configuration.ExtractConfiguration(*confPath)
+	if err != nil {
+		panic(err)
+	}
 	conn, err := amqp.Dial(conf.AMQPMessageBroker)
 	if err != nil {
 		panic(err)
@@ -35,29 +37,31 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		panic(err)
 	}
-
 	fmt.Println("Connecting to database...")
-	dh, _ := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	dh, err := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	if err != nil {
+		panic(err)
+	}
 	eh := &EventsServiceHandler{
-		dbHandler:    dh,
-		endpoint:     conf.Endpoint,
-		tlsEndpoint:  conf.TLSEndpoint,
-		eventEmitter: ee,
+		DbHandler:    dh,
+		Endpoint:     conf.Endpoint,
+		TLSEndpoint:  conf.TLSEndpoint,
+		EventEmitter: ee,
 	}
 	r := mux.NewRouter()
 	s := r.PathPrefix("/events").Subrouter()
-	s.Methods("GET").Path("").HandlerFunc(eh.getAllEventsHandler)
-	s.Methods("POST").Path("").HandlerFunc(eh.addEventHandler)
-	s.Methods("GET").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.getEventHandler)
-	s.Methods("DELETE").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.deleteEventHandler)
+	s.Methods("GET").Path("").HandlerFunc(eh.GetAllEventsHandler)
+	s.Methods("POST").Path("").HandlerFunc(eh.AddEventHandler)
+	s.Methods("GET").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.GetEventHandler)
+	s.Methods("DELETE").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.DeleteEventHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
 	fmt.Println("eventsService listening...")
 	go func() {
-		httpsErrChan <- http.ListenAndServeTLS(eh.tlsEndpoint, "certificate/cert.pem", "certificate/key.pem", r)
+		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", r)
 	}()
 	go func() {
-		httpErrChan <- http.ListenAndServe(eh.endpoint, r)
+		httpErrChan <- http.ListenAndServe(eh.Endpoint, r)
 	}()
 	return httpErrChan, httpsErrChan
 }
