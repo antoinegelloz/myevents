@@ -35,8 +35,9 @@ func (p *EventProcessor) ProcessEvents() {
 func (p *EventProcessor) handleEvent(event msgqueue.Event) {
 	switch e := event.(type) {
 	case *contracts.EventCreatedEvent:
+		newID := bson.ObjectIdHex(e.ID)
 		_, err := p.Database.AddEvent(models.Event{
-			ID:         bson.ObjectId(e.ID),
+			ID:         newID,
 			Name:       e.Name,
 			LocationID: bson.ObjectId(e.LocationID),
 			Start:      e.Start,
@@ -47,7 +48,10 @@ func (p *EventProcessor) handleEvent(event msgqueue.Event) {
 		}
 		log.Printf("event %s added to bookingService database: %s", e.ID, e)
 	case *contracts.EventDeletedEvent:
-		err := p.Database.DeleteEvent(models.Event{ID: bson.ObjectId(e.ID)})
+		toDeleteID := bson.ObjectIdHex(e.ID)
+		err := p.Database.DeleteEvent(models.Event{
+			ID: toDeleteID,
+		})
 		if err != nil {
 			panic(fmt.Errorf("error while deleting event from bookingService database: %s", err))
 		}
