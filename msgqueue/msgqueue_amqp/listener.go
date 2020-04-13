@@ -6,6 +6,7 @@ import (
 	"github.com/agelloz/reach/contracts"
 	"github.com/agelloz/reach/msgqueue"
 	"github.com/streadway/amqp"
+	"log"
 )
 
 type amqpEventListener struct {
@@ -38,38 +39,41 @@ func (a *amqpEventListener) setup() error {
 func (a *amqpEventListener) Listen(eventNames ...string) (<-chan msgqueue.Event, <-chan error, error) {
 	channel, err := a.connection.Channel()
 	if err != nil {
+		log.Println("channel error")
 		return nil, nil, err
 	}
 	defer channel.Close()
 	for _, eventName := range eventNames {
 		if err := channel.QueueBind(a.queue, eventName, "eventsExchange", false, nil); err != nil {
+			log.Println("queue binding error")
 			return nil, nil, err
 		}
 	}
 	messages, err := channel.Consume(a.queue, "", false, false, false, false, nil)
 	if err != nil {
+		log.Println("channel consuming error")
 		return nil, nil, err
 	}
-	events := make(chan msgqueue.Event)
-	errors := make(chan error)
+	eventsChan := make(chan msgqueue.Event)
+	errorsChan := make(chan error)
 	go func() {
 		for msg := range messages {
 			// Map message to actual event struct
 			rawEventName, ok := msg.Headers["x-event-name"]
 			if !ok {
-				errors <- fmt.Errorf("msg did not contain x-event-name header")
+				errorsChan <- fmt.Errorf("msg did not contain x-event-name header")
 				err := msg.Nack(false, false)
 				if err != nil {
-					errors <- err
+					errorsChan <- err
 				}
 				continue
 			}
 			eventName, ok := rawEventName.(string)
 			if !ok {
-				errors <- fmt.Errorf("x-event-name header is not string, but %t", rawEventName)
+				errorsChan <- fmt.Errorf("x-event-name header is not string, but %t", rawEventName)
 				err := msg.Nack(false, false)
 				if err != nil {
-					errors <- err
+					errorsChan <- err
 				}
 				continue
 			}
@@ -80,16 +84,16 @@ func (a *amqpEventListener) Listen(eventNames ...string) (<-chan msgqueue.Event,
 			case "event.deleted":
 				event = new(contracts.EventDeletedEvent)
 			default:
-				errors <- fmt.Errorf("event type %s is unknown", eventName)
+				errorsChan <- fmt.Errorf("event type %s is unknown", eventName)
 				continue
 			}
 			err := json.Unmarshal(msg.Body, event)
 			if err != nil {
-				errors <- err
+				errorsChan <- err
 				continue
 			}
-			events <- event
+			eventsChan <- event
 		}
 	}()
-	return events, errors, nil
+	return eventsChan, errorsChan, nil
 }
