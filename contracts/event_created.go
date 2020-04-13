@@ -1,11 +1,13 @@
 package contracts
 
-import "time"
+import (
+	"time"
+)
 
 type EventCreatedEvent struct {
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
-	LocationID string    `json:"location_id"`
+	ID         []byte    `json:"event_id"`
+	Name       string    `json:"event_name"`
+	LocationID []byte    `json:"location_id"`
 	Start      time.Time `json:"start_time"`
 	End        time.Time `json:"end_time"`
 }

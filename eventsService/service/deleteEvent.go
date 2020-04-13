@@ -52,12 +52,12 @@ func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *htt
 	fmt.Printf("Deleted event from database ID:%s\n", event.ID)
 
 	msg := contracts.EventDeletedEvent{
-		ID: event.ID.String(),
+		ID: []byte(event.ID),
 	}
 	err = eh.EventEmitter.Emit(&msg)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Cannot emit deletion of event ID: %s",
-			event.ID.String()), http.StatusInternalServerError)
+			hex.EncodeToString(msg.ID)), http.StatusInternalServerError)
 		return
 	}
 	fmt.Print("Deletion of event successfully emitted\n")

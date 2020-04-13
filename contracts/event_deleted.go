@@ -1,7 +1,7 @@
 package contracts
 
 type EventDeletedEvent struct {
-	ID         string    `json:"id"`
+	ID []byte `json:"event_id"`
 }
 
 func (e *EventDeletedEvent) EventName() string {

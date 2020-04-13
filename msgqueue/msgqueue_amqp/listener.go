@@ -56,6 +56,7 @@ func (a *amqpEventListener) Listen(eventNames ...string) (<-chan msgqueue.Event,
 	}
 	eventsChan := make(chan msgqueue.Event)
 	errorsChan := make(chan error)
+	log.Println("listening to events...")
 	go func() {
 		for msg := range messages {
 			// Map message to actual event struct

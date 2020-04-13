@@ -20,22 +20,22 @@ func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.R
 	}
 	id, err := eh.DbHandler.AddEvent(event)
 	if nil != err {
-		http.Error(w, fmt.Sprintf("Cannot add event ID: %s", id), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Cannot add event ID: %s", hex.EncodeToString(id)), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Added new event to database ID:%s\n", event.ID)
+	fmt.Printf("Added new event to database ID:%s\n", hex.EncodeToString(id))
 
 	msg := contracts.EventCreatedEvent{
-		ID:         hex.EncodeToString(id),
+		ID:         id,
 		Name:       event.Name,
-		LocationID: event.Location.ID.String(),
+		LocationID: []byte(event.Location.ID),
 		Start:      time.Unix(event.StartDate, 0),
 		End:        time.Unix(event.EndDate, 0),
 	}
 	err = eh.EventEmitter.Emit(&msg)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Cannot emit creation of event ID: %s", event.ID), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Cannot emit creation of event ID: %s", hex.EncodeToString(id)), http.StatusInternalServerError)
 		return
 	}
-	fmt.Print("Creation of event successfully emitted\n")
+	fmt.Printf("Creation of event successfully emitted with ID:%s\n", hex.EncodeToString(id))
 }
