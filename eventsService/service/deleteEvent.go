@@ -2,9 +2,11 @@ package service
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/agelloz/reach/contracts"
 	"github.com/agelloz/reach/eventsService/models"
+	"github.com/streadway/amqp"
 	"log"
 	"net/http"
 	"strings"
@@ -55,10 +57,25 @@ func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *htt
 	msg := contracts.EventDeletedEvent{
 		ID: []byte(event.ID),
 	}
-	err = eh.EventEmitter.Emit(&msg)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Cannot emit deletion of event ID: %s",
-			hex.EncodeToString(msg.ID)), http.StatusInternalServerError)
+	jsonDoc, err := json.Marshal(&msg)
+	if nil != err {
+		http.Error(w, "error marshal message", http.StatusInternalServerError)
+		return
+	}
+	channel, err := eh.AMQPConnection.Channel()
+	if nil != err {
+		http.Error(w, "error channel", http.StatusInternalServerError)
+		return
+	}
+	defer channel.Close()
+	message := amqp.Publishing{
+		Headers:     amqp.Table{"x-event-name": "event.deleted"},
+		Body:        jsonDoc,
+		ContentType: "application/json",
+	}
+	err = channel.Publish("", "events_queue", false, false, message)
+	if nil != err {
+		http.Error(w, "error sending message", http.StatusInternalServerError)
 		return
 	}
 	log.Print("deletion of event successfully emitted\n")

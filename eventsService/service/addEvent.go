@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/agelloz/reach/contracts"
+	"github.com/streadway/amqp"
 	"log"
 	"net/http"
 	"time"
@@ -33,9 +34,26 @@ func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.R
 		Start:      time.Unix(event.StartDate, 0),
 		End:        time.Unix(event.EndDate, 0),
 	}
-	err = eh.EventEmitter.Emit(&msg)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Cannot emit creation of event ID: %s", hex.EncodeToString(id)), http.StatusInternalServerError)
+
+	jsonDoc, err := json.Marshal(&msg)
+	if nil != err {
+		http.Error(w, "error marshal message", http.StatusInternalServerError)
+		return
+	}
+	channel, err := eh.AMQPConnection.Channel()
+	if nil != err {
+		http.Error(w, "error channel", http.StatusInternalServerError)
+		return
+	}
+	defer channel.Close()
+	message := amqp.Publishing{
+		Headers:     amqp.Table{"x-event-name": "event.created"},
+		Body:        jsonDoc,
+		ContentType: "application/json",
+	}
+	err = channel.Publish("", "events_queue", false, false, message)
+	if nil != err {
+		http.Error(w, "error sending message", http.StatusInternalServerError)
 		return
 	}
 	log.Printf("creation of event successfully emitted with ID:%s\n", hex.EncodeToString(id))

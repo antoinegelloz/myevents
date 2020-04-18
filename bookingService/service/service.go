@@ -5,8 +5,6 @@ import (
 	"github.com/agelloz/reach/bookingService/configuration"
 	"github.com/agelloz/reach/bookingService/listener"
 	"github.com/agelloz/reach/bookingService/persistence"
-	"github.com/agelloz/reach/msgqueue"
-	"github.com/agelloz/reach/msgqueue/msgqueue_amqp"
 	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
 	"log"
@@ -14,10 +12,9 @@ import (
 )
 
 type BookingServiceHandler struct {
-	DBHandler     persistence.DBHandler
-	Endpoint      string
-	TLSEndpoint   string
-	EventListener msgqueue.EventListener
+	DBHandler   persistence.DBHandler
+	Endpoint    string
+	TLSEndpoint string
 }
 
 // ServeAPI is
@@ -38,18 +35,25 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		log.Panic(err)
 	}
-	el, err := msgqueue_amqp.NewAMQPEventListener(conn, "events_queue")
+	defer conn.Close()
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, nil
+	}
+	defer ch.Close()
+	_, err = ch.QueueDeclare("events_queue", false, false, false, false, nil)
 	if err != nil {
 		log.Panic(err)
 	}
-	processor := &listener.EventProcessor{EventListener: el, Database: dh}
-	processor.ProcessEvents()
+	err = listener.Listen(conn, dh)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	eh := &BookingServiceHandler{
-		DBHandler:     dh,
-		Endpoint:      conf.Endpoint,
-		TLSEndpoint:   conf.TLSEndpoint,
-		EventListener: el,
+		DBHandler:   dh,
+		Endpoint:    conf.Endpoint,
+		TLSEndpoint: conf.TLSEndpoint,
 	}
 
 	r := mux.NewRouter()

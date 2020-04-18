@@ -5,7 +5,6 @@ import (
 	"github.com/agelloz/reach/eventsService/configuration"
 	"github.com/agelloz/reach/eventsService/persistence"
 	"github.com/agelloz/reach/eventsService/service"
-	"github.com/agelloz/reach/msgqueue/msgqueue_amqp"
 	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
@@ -20,15 +19,23 @@ func TestSimple_API_Usage(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	ee, err := msgqueue_amqp.NewAMQPEventEmitter(conn)
+	if err != nil {
+		panic(err)
+	}
+	channel, err := conn.Channel()
+	if err != nil {
+		panic(err)
+	}
+	defer channel.Close()
+	_, err = channel.QueueDeclare("events_queue", false, false, false, false, nil)
 	if err != nil {
 		panic(err)
 	}
 	var h = &service.EventsServiceHandler{
-		DbHandler:    dbh,
-		Endpoint:     configuration.EndpointDefault,
-		TLSEndpoint:  configuration.TLSEndpointDefault,
-		EventEmitter: ee,
+		DbHandler:      dbh,
+		Endpoint:       configuration.EndpointDefault,
+		TLSEndpoint:    configuration.TLSEndpointDefault,
+		AMQPConnection: conn,
 	}
 
 	t.Run("Get all events", func(t *testing.T) {

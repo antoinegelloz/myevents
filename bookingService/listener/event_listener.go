@@ -2,39 +2,85 @@ package listener
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"github.com/agelloz/reach/bookingService/models"
 	"github.com/agelloz/reach/bookingService/persistence"
 	"github.com/agelloz/reach/contracts"
-	"github.com/agelloz/reach/msgqueue"
+	"github.com/streadway/amqp"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 )
 
-type EventProcessor struct {
-	EventListener msgqueue.EventListener
-	Database      persistence.DBHandler
+type Event interface {
+	EventName() string
 }
 
-func (p *EventProcessor) ProcessEvents() {
-	eventChan, errChan, err := p.EventListener.Listen("event.created", "event.deleted")
+type AMQPEventListener struct {
+	Connection *amqp.Connection
+	Queue      string
+	Channel    *amqp.Channel
+}
+
+func Listen(conn *amqp.Connection, dh persistence.DBHandler) error {
+	ch, err := conn.Channel()
 	if err != nil {
-		panic(err)
+		log.Println("channel error")
+		return err
 	}
-	for {
-		select {
-		case newEvent := <-eventChan:
-			p.handleEvent(newEvent)
-		case err = <-errChan:
-			log.Printf("received error while processing msg: %s", err)
+	defer ch.Close()
+	messages, err := ch.Consume("events_queue", "", true, false, false, false, nil)
+	if err != nil {
+		log.Println("channel consuming error")
+		return err
+	}
+	log.Println("listening to events...")
+	forever := make(chan bool)
+	go func() {
+		for msg := range messages {
+			// Map message to actual event struct
+			rawEventName, ok := msg.Headers["x-event-name"]
+			if !ok {
+				log.Println("msg did not contain x-event-name header")
+				err := msg.Nack(false, false)
+				if err != nil {
+					log.Printf("nack error: %s\n", err)
+				}
+				continue
+			}
+			eventName, ok := rawEventName.(string)
+			if !ok {
+				log.Printf("x-event-name header is not string, but %t\n", rawEventName)
+				err := msg.Nack(false, false)
+				if err != nil {
+					log.Printf("nack error: %s\n", err)
+				}
+				continue
+			}
+			var event Event
+			switch eventName {
+			case "event.created":
+				event = new(contracts.EventCreatedEvent)
+			case "event.deleted":
+				event = new(contracts.EventDeletedEvent)
+			default:
+				log.Printf("event type %s is unknown\n", eventName)
+				continue
+			}
+			err := json.Unmarshal(msg.Body, event)
+			if err != nil {
+				log.Printf("unmarshal error: %s\n", err)
+				continue
+			}
+			HandleEvent(dh, event)
 		}
-	}
+	}()
+	<-forever
+	return nil
 }
 
-func (p *EventProcessor) handleEvent(event msgqueue.Event) {
-	log.Println("handling new event...")
+func HandleEvent(dh persistence.DBHandler, event Event) {
 	switch e := event.(type) {
 	case *contracts.EventCreatedEvent:
-		log.Printf("Adding new event from queue ID:%s\n", hex.EncodeToString(e.ID))
 		var newID bson.ObjectId
 		if !bson.IsObjectIdHex(hex.EncodeToString(e.ID)) {
 			log.Printf("Not valid ID|%s|", hex.EncodeToString(e.ID))
@@ -48,7 +94,7 @@ func (p *EventProcessor) handleEvent(event msgqueue.Event) {
 		} else {
 			newLocation = bson.ObjectIdHex(hex.EncodeToString(e.LocationID))
 		}
-		_, err := p.Database.AddEvent(models.Event{
+		_, err := dh.AddEvent(models.Event{
 			ID:         newID,
 			Name:       e.Name,
 			LocationID: newLocation,
@@ -56,25 +102,26 @@ func (p *EventProcessor) handleEvent(event msgqueue.Event) {
 			End:        e.End,
 		})
 		if err != nil {
-			log.Panicf("error while adding event to bookingService database: %s", err)
-		}
-		log.Printf("event %s added to bookingService database: %+v", hex.EncodeToString(e.ID), e)
-	case *contracts.EventDeletedEvent:
-		log.Printf("Deleting event from queue ID:%s\n", hex.EncodeToString(e.ID))
-		var newID bson.ObjectId
-		if !bson.IsObjectIdHex(hex.EncodeToString(e.ID)) {
-			log.Printf("Not valid ID |%s|", hex.EncodeToString(e.ID))
-			newID = bson.NewObjectId()
+			log.Printf("error while adding event to database: %s", err)
 		} else {
-			newID = bson.ObjectIdHex(hex.EncodeToString(e.ID))
+			log.Printf("added event %s to database: %+v", hex.EncodeToString(e.ID), e)
 		}
-		err := p.Database.DeleteEvent(models.Event{
-			ID: newID,
-		})
-		if err != nil {
-			log.Panicf("error while deleting event from bookingService database: %s", err)
+	case *contracts.EventDeletedEvent:
+		if !bson.IsObjectIdHex(hex.EncodeToString(e.ID)) {
+			log.Printf("error while deleting event from database: invalid ID |%s|", hex.EncodeToString(e.ID))
+		} else {
+			foundEvent, err := dh.GetEventByID(e.ID)
+			if err != nil {
+				log.Printf("error while deleting event from database: %s", err)
+			} else {
+				err := dh.DeleteEvent(foundEvent)
+				if err != nil {
+					log.Printf("error while deleting event from database: %s", err)
+				} else {
+					log.Printf("deleted event %s from database: %+v", hex.EncodeToString(e.ID), e)
+				}
+			}
 		}
-		log.Printf("event %s deleted from bookingService database: %+v", hex.EncodeToString(e.ID), e)
 	default:
 		log.Printf("unknown event: %t", e)
 	}
