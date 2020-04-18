@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/agelloz/reach/contracts"
+	"log"
 	"net/http"
 	"time"
 
@@ -23,7 +24,7 @@ func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.R
 		http.Error(w, fmt.Sprintf("Cannot add event ID: %s", hex.EncodeToString(id)), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Added new event to database ID:%s\n", hex.EncodeToString(id))
+	log.Printf("added new event to database ID:%s\n", hex.EncodeToString(id))
 
 	msg := contracts.EventCreatedEvent{
 		ID:         id,
@@ -37,5 +38,5 @@ func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.R
 		http.Error(w, fmt.Sprintf("Cannot emit creation of event ID: %s", hex.EncodeToString(id)), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Creation of event successfully emitted with ID:%s\n", hex.EncodeToString(id))
+	log.Printf("creation of event successfully emitted with ID:%s\n", hex.EncodeToString(id))
 }

@@ -2,7 +2,6 @@ package service
 
 import (
 	"flag"
-	"fmt"
 	"github.com/agelloz/reach/bookingService/configuration"
 	"github.com/agelloz/reach/bookingService/listener"
 	"github.com/agelloz/reach/bookingService/persistence"
@@ -10,6 +9,7 @@ import (
 	"github.com/agelloz/reach/msgqueue/msgqueue_amqp"
 	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
+	"log"
 	"net/http"
 )
 
@@ -29,23 +29,21 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println("Connecting to database...")
+	log.Println("connecting to database...")
 	dh, err := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
-
 	conn, err := amqp.Dial(conf.AMQPMessageBroker)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	el, err := msgqueue_amqp.NewAMQPEventListener(conn, "events_queue")
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	processor := &listener.EventProcessor{EventListener: el, Database: dh}
-	go processor.ProcessEvents()
+	processor.ProcessEvents()
 
 	eh := &BookingServiceHandler{
 		DBHandler:     dh,
@@ -57,12 +55,13 @@ func ServeAPI() (chan error, chan error) {
 	r := mux.NewRouter()
 	s := r.PathPrefix("/events").Subrouter()
 	s.Methods("GET").Path("").HandlerFunc(eh.GetAllEventsHandler)
+	s.Methods("DELETE").Path("").HandlerFunc(eh.DeleteAllEventsHandler)
 	s.Methods("GET").Path("/bookings").HandlerFunc(eh.GetAllBookingsHandler)
 	s.Methods("POST").Path("/bookings/{eventID}").HandlerFunc(eh.AddBookingHandler)
 	s.Methods("DELETE").Path("/bookings/{eventID}").HandlerFunc(eh.DeleteBookingHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
-	fmt.Println("bookingService listening...")
+	log.Println("bookingService listening...")
 	go func() {
 		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", r)
 	}()

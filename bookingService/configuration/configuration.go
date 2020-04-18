@@ -2,7 +2,7 @@ package configuration
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/agelloz/reach/bookingService/persistence"
@@ -41,8 +41,8 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 	}
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Configuration file not found. Continuing with default values:")
-		fmt.Printf("%+v\n", conf)
+		log.Println("configuration file not found. Continuing with default values:")
+		log.Printf("%+v\n", conf)
 		return conf, nil
 	}
 	err = json.NewDecoder(file).Decode(&conf)

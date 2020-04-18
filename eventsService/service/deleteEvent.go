@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/agelloz/reach/contracts"
 	"github.com/agelloz/reach/eventsService/models"
+	"log"
 	"net/http"
 	"strings"
 
@@ -32,7 +33,7 @@ func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *htt
 			http.Error(w, "Cannot get event to delete by name", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("Found event to delete by name %s\n", nameOrIDValue)
+		log.Printf("found event to delete by name %s\n", nameOrIDValue)
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {
@@ -42,14 +43,14 @@ func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *htt
 			http.Error(w, "Cannot find event to delete by ID", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("Got event to delete by ID %s\n", event.ID)
+		log.Printf("got event to delete by ID %s\n", event.ID)
 	}
 	err = eh.DbHandler.DeleteEvent(event)
 	if nil != err {
 		http.Error(w, fmt.Sprintf("Cannot delete event ID: %s", event.ID), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Deleted event from database ID:%s\n", event.ID)
+	log.Printf("deleted event from database ID:%s\n", event.ID)
 
 	msg := contracts.EventDeletedEvent{
 		ID: []byte(event.ID),
@@ -60,5 +61,5 @@ func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *htt
 			hex.EncodeToString(msg.ID)), http.StatusInternalServerError)
 		return
 	}
-	fmt.Print("Deletion of event successfully emitted\n")
+	log.Print("deletion of event successfully emitted\n")
 }

@@ -19,6 +19,7 @@ type DBHandler interface {
 	DeleteEvent(models.Event) error
 	GetEventByID([]byte) (models.Event, error)
 	GetEventByName(string) (models.Event, error)
+	DeleteAllEvents() error
 	GetAllEvents() ([]models.Event, error)
 	AddBooking(models.Booking) ([]byte, error)
 	DeleteBooking(models.Booking) error

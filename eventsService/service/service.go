@@ -2,9 +2,9 @@ package service
 
 import (
 	"flag"
-	"fmt"
 	"github.com/agelloz/reach/msgqueue"
 	"github.com/streadway/amqp"
+	"log"
 	"net/http"
 
 	"github.com/agelloz/reach/eventsService/configuration"
@@ -37,7 +37,7 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Connecting to database...")
+	log.Println("connecting to database...")
 	dh, err := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	if err != nil {
 		panic(err)
@@ -56,7 +56,7 @@ func ServeAPI() (chan error, chan error) {
 	s.Methods("DELETE").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.DeleteEventHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
-	fmt.Println("eventsService listening...")
+	log.Println("eventsService listening...")
 	go func() {
 		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", r)
 	}()

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/agelloz/reach/bookingService/models"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
 
@@ -27,7 +28,7 @@ func (eh *BookingServiceHandler) AddBookingHandler(w http.ResponseWriter, r *htt
 		http.Error(w, "Cannot find event to book by ID", http.StatusNotFound)
 		return
 	}
-	fmt.Printf("Got event to book by ID %s\n", event.ID)
+	log.Printf("got event to book by ID %s\n", event.ID)
 
 	newBooking := models.Booking{}
 	err = json.NewDecoder(r.Body).Decode(&newBooking)
@@ -40,5 +41,5 @@ func (eh *BookingServiceHandler) AddBookingHandler(w http.ResponseWriter, r *htt
 		http.Error(w, fmt.Sprintf("Cannot add new booking ID: %s", id), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Added new booking ID:%s\n", newBooking.ID.String())
+	log.Printf("added new booking ID:%s\n", newBooking.ID.String())
 }

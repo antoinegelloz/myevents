@@ -59,6 +59,7 @@ func (a *amqpEventListener) Listen(eventNames ...string) (<-chan msgqueue.Event,
 	log.Println("listening to events...")
 	go func() {
 		for msg := range messages {
+			log.Println("message received")
 			// Map message to actual event struct
 			rawEventName, ok := msg.Headers["x-event-name"]
 			if !ok {
@@ -93,6 +94,7 @@ func (a *amqpEventListener) Listen(eventNames ...string) (<-chan msgqueue.Event,
 				errorsChan <- err
 				continue
 			}
+			log.Println("event sent to channel")
 			eventsChan <- event
 		}
 	}()

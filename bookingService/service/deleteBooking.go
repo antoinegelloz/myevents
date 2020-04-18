@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/agelloz/reach/bookingService/models"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -25,12 +26,12 @@ func (eh *BookingServiceHandler) DeleteBookingHandler(w http.ResponseWriter, r *
 		http.Error(w, "Cannot find booking to delete by ID", http.StatusNotFound)
 		return
 	}
-	fmt.Printf("Got event to delete a booking by ID %s\n", booking.ID)
+	log.Printf("got event to delete a booking by ID %s\n", booking.ID)
 
 	err = eh.DBHandler.DeleteBooking(booking)
 	if nil != err {
 		http.Error(w, fmt.Sprintf("Cannot delete booking ID: %s", booking.ID), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Deleted booking from database ID:%s\n", booking.ID)
+	log.Printf("deleted booking from database ID:%s\n", booking.ID)
 }

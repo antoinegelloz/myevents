@@ -2,7 +2,6 @@ package listener
 
 import (
 	"encoding/hex"
-	"fmt"
 	"github.com/agelloz/reach/bookingService/models"
 	"github.com/agelloz/reach/bookingService/persistence"
 	"github.com/agelloz/reach/contracts"
@@ -17,16 +16,14 @@ type EventProcessor struct {
 }
 
 func (p *EventProcessor) ProcessEvents() {
-	log.Println("Listening to events...")
-
 	eventChan, errChan, err := p.EventListener.Listen("event.created", "event.deleted")
 	if err != nil {
 		panic(err)
 	}
 	for {
 		select {
-		case evt := <-eventChan:
-			p.handleEvent(evt)
+		case newEvent := <-eventChan:
+			p.handleEvent(newEvent)
 		case err = <-errChan:
 			log.Printf("received error while processing msg: %s", err)
 		}
@@ -34,27 +31,50 @@ func (p *EventProcessor) ProcessEvents() {
 }
 
 func (p *EventProcessor) handleEvent(event msgqueue.Event) {
+	log.Println("handling new event...")
 	switch e := event.(type) {
 	case *contracts.EventCreatedEvent:
+		log.Printf("Adding new event from queue ID:%s\n", hex.EncodeToString(e.ID))
+		var newID bson.ObjectId
+		if !bson.IsObjectIdHex(hex.EncodeToString(e.ID)) {
+			log.Printf("Not valid ID|%s|", hex.EncodeToString(e.ID))
+			newID = bson.NewObjectId()
+		} else {
+			newID = bson.ObjectIdHex(hex.EncodeToString(e.ID))
+		}
+		var newLocation bson.ObjectId
+		if !bson.IsObjectIdHex(hex.EncodeToString(e.LocationID)) {
+			newLocation = bson.NewObjectId()
+		} else {
+			newLocation = bson.ObjectIdHex(hex.EncodeToString(e.LocationID))
+		}
 		_, err := p.Database.AddEvent(models.Event{
-			ID:         bson.ObjectId(e.ID),
+			ID:         newID,
 			Name:       e.Name,
-			LocationID: bson.ObjectId(e.LocationID),
+			LocationID: newLocation,
 			Start:      e.Start,
 			End:        e.End,
 		})
 		if err != nil {
-			panic(fmt.Errorf("error while adding event to bookingService database: %s", err))
+			log.Panicf("error while adding event to bookingService database: %s", err)
 		}
-		log.Printf("event %s added to bookingService database: %s", hex.EncodeToString(e.ID), e)
+		log.Printf("event %s added to bookingService database: %+v", hex.EncodeToString(e.ID), e)
 	case *contracts.EventDeletedEvent:
+		log.Printf("Deleting event from queue ID:%s\n", hex.EncodeToString(e.ID))
+		var newID bson.ObjectId
+		if !bson.IsObjectIdHex(hex.EncodeToString(e.ID)) {
+			log.Printf("Not valid ID |%s|", hex.EncodeToString(e.ID))
+			newID = bson.NewObjectId()
+		} else {
+			newID = bson.ObjectIdHex(hex.EncodeToString(e.ID))
+		}
 		err := p.Database.DeleteEvent(models.Event{
-			ID: bson.ObjectId(e.ID),
+			ID: newID,
 		})
 		if err != nil {
-			panic(fmt.Errorf("error while deleting event from bookingService database: %s", err))
+			log.Panicf("error while deleting event from bookingService database: %s", err)
 		}
-		log.Printf("event %s deleted from bookingService database: %s", hex.EncodeToString(e.ID), e)
+		log.Printf("event %s deleted from bookingService database: %+v", hex.EncodeToString(e.ID), e)
 	default:
 		log.Printf("unknown event: %t", e)
 	}

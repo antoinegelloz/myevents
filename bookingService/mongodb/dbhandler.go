@@ -22,6 +22,14 @@ func (mgoLayer *DBLayer) DeleteEvent(e models.Event) error {
 	return s.DB(DB).C(EVENTS).Remove(e)
 }
 
+// DeleteAllEvents deletes all events
+func (mgoLayer *DBLayer) DeleteAllEvents() error {
+	s := mgoLayer.session.Copy()
+	defer s.Close()
+	_, err := s.DB(DB).C(EVENTS).RemoveAll(nil)
+	return err
+}
+
 // GetEventByID returns an event
 func (mgoLayer *DBLayer) GetEventByID(id []byte) (models.Event, error) {
 	s := mgoLayer.session.Copy()
