@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/agelloz/reach/bookingService/persistence"
+	"github.com/agelloz/reach/bookingservice/persistence"
 )
 
 var (

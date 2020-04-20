@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/agelloz/reach/bookingService/models"
-	"github.com/agelloz/reach/bookingService/persistence"
+	"github.com/agelloz/reach/bookingservice/models"
+	"github.com/agelloz/reach/bookingservice/persistence"
 	"github.com/agelloz/reach/contracts"
 	"github.com/streadway/amqp"
 	"gopkg.in/mgo.v2/bson"
