@@ -5,11 +5,13 @@ import (
 )
 
 type EventCreatedEvent struct {
-	ID         []byte    `json:"event_id"`
-	Name       string    `json:"event_name"`
-	LocationID []byte    `json:"location_id"`
-	Start      time.Time `json:"start_time"`
-	End        time.Time `json:"end_time"`
+	ID              []byte    `json:"event_id"`
+	Name            string    `json:"event_name"`
+	StartDate       time.Time `json:"start_date"`
+	EndDate         time.Time `json:"end_date"`
+	LocationID      []byte    `json:"location_id"`
+	LocationName    string    `json:"location_name"`
+	LocationCountry string    `json:"location_country"`
 }
 
 func (e *EventCreatedEvent) EventName() string {

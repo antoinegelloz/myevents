@@ -64,6 +64,9 @@ func (mgoLayer *DBLayer) AddBooking(b models.Booking) ([]byte, error) {
 	if !b.ID.Valid() {
 		b.ID = bson.NewObjectId()
 	}
+	if !b.UserID.Valid() {
+		b.UserID = bson.NewObjectId()
+	}
 	return []byte(b.ID), s.DB(DB).C(BOOKINGS).Insert(b)
 }
 

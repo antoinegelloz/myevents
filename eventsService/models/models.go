@@ -1,31 +1,23 @@
 package models
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"time"
+
+	"gopkg.in/mgo.v2/bson"
+)
 
 // Event represents an event
 type Event struct {
 	ID        bson.ObjectId `bson:"_id"`
-	Name      string
-	Duration  int
-	StartDate int64
-	EndDate   int64
-	Location  Location
+	Name      string        `json:"name"`
+	StartDate time.Time     `json:"start_date"`
+	EndDate   time.Time     `json:"end_date"`
+	Location  Location      `json:"location"`
 }
 
 // Location represents a location
 type Location struct {
-	ID        bson.ObjectId `bson:"_id"`
-	Name      string
-	Address   string
-	Country   string
-	OpenTime  int
-	CloseTime int
-	Halls     []Hall
-}
-
-// Hall represents a hall
-type Hall struct {
-	Name     string `json:"name"`
-	Location string `json:"location,omitempty"`
-	Capacity int    `json:"capacity"`
+	ID      bson.ObjectId `bson:"location_id"`
+	Name    string        `json:"name"`
+	Country string        `json:"country"`
 }

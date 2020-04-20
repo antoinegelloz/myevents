@@ -2,32 +2,21 @@ package main
 
 import (
 	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/agelloz/reach/eventsService/configuration"
 	"github.com/agelloz/reach/eventsService/persistence"
 	"github.com/agelloz/reach/eventsService/service"
 	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestSimple_API_Usage(t *testing.T) {
 	dbh, _ := persistence.NewPersistenceLayer(configuration.DBTypeDefault, configuration.DBConnectionDefault)
 	conn, err := amqp.Dial(configuration.AMPQURLDefault)
-	if err != nil {
-		panic(err)
-	}
-	if err != nil {
-		panic(err)
-	}
-	channel, err := conn.Channel()
-	if err != nil {
-		panic(err)
-	}
-	defer channel.Close()
-	_, err = channel.QueueDeclare("events_queue", false, false, false, false, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -54,15 +43,6 @@ func TestSimple_API_Usage(t *testing.T) {
 		w := httptest.NewRecorder()
 		h.GetEventHandler(w, req)
 		resp := w.Result()
-		/*
-			for resp.StatusCode == 200 {
-				req, err := http.NewRequest(http.MethodDelete, "/events", nil)
-				req = mux.SetURLVars(req, map[string]string{"nameOrID": "name", "nameOrIDValue": "circle test"})
-				assert.NoError(t, err)
-				w := httptest.NewRecorder()
-				h.deleteEventHandler(w, req)
-				resp = w.Result()
-			}*/
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 

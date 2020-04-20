@@ -23,12 +23,6 @@ REPORT=true
 TIMEOUT=60s
 RUN=".*"
 
-#setting environment
-export PORT=8080
-export MONGO_HOST=mongodb://localhost:27017
-export GIN_MODE=release
-export HTTP_ORIGIN="*"
-
 all: fix-fmt code-checks test
 
 install:

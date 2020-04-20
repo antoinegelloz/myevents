@@ -3,7 +3,7 @@ package service
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -33,7 +33,7 @@ func (eh *EventsServiceHandler) GetEventHandler(w http.ResponseWriter, r *http.R
 			http.Error(w, "Cannot get event by name", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("Got event by name %s\n", nameOrIDValue)
+		log.Printf("got event by name %s\n", nameOrIDValue)
 	case "id":
 		id, err := hex.DecodeString(nameOrIDValue)
 		if err == nil {
@@ -43,7 +43,7 @@ func (eh *EventsServiceHandler) GetEventHandler(w http.ResponseWriter, r *http.R
 			http.Error(w, "Cannot get event by ID", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("Got event by ID %s\n", event.ID)
+		log.Printf("got event by ID %s\n", event.ID)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=utf8")
 	err = json.NewEncoder(w).Encode(&event)

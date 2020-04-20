@@ -2,12 +2,14 @@ package service
 
 import (
 	"flag"
-	"github.com/streadway/amqp"
 	"log"
 	"net/http"
 
+	"github.com/streadway/amqp"
+
 	"github.com/agelloz/reach/eventsService/configuration"
 	"github.com/agelloz/reach/eventsService/persistence"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -31,15 +33,6 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		panic(err)
 	}
-	channel, err := conn.Channel()
-	if err != nil {
-		panic(err)
-	}
-	defer channel.Close()
-	_, err = channel.QueueDeclare("events_queue", false, false, false, false, nil)
-	if err != nil {
-		panic(err)
-	}
 	log.Println("connecting to database...")
 	dh, err := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	if err != nil {
@@ -54,17 +47,19 @@ func ServeAPI() (chan error, chan error) {
 	r := mux.NewRouter()
 	s := r.PathPrefix("/events").Subrouter()
 	s.Methods("GET").Path("").HandlerFunc(eh.GetAllEventsHandler)
+	s.Methods("DELETE").Path("").HandlerFunc(eh.DeleteAllEventsHandler)
 	s.Methods("POST").Path("").HandlerFunc(eh.AddEventHandler)
 	s.Methods("GET").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.GetEventHandler)
 	s.Methods("DELETE").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.DeleteEventHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
 	log.Println("eventsService listening...")
+	server := handlers.CORS()(r)
 	go func() {
-		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", r)
+		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", server)
 	}()
 	go func() {
-		httpErrChan <- http.ListenAndServe(eh.Endpoint, r)
+		httpErrChan <- http.ListenAndServe(eh.Endpoint, server)
 	}()
 	return httpErrChan, httpsErrChan
 }

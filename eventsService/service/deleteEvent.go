@@ -64,16 +64,20 @@ func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *htt
 	}
 	channel, err := eh.AMQPConnection.Channel()
 	if nil != err {
-		http.Error(w, "error channel", http.StatusInternalServerError)
+		http.Error(w, "error opening channel", http.StatusInternalServerError)
 		return
 	}
 	defer channel.Close()
+	q, err := channel.QueueDeclare("events_queue", false, false, false, false, nil)
+	if err != nil {
+		panic(err)
+	}
 	message := amqp.Publishing{
 		Headers:     amqp.Table{"x-event-name": "event.deleted"},
 		Body:        jsonDoc,
 		ContentType: "application/json",
 	}
-	err = channel.Publish("", "events_queue", false, false, message)
+	err = channel.Publish("", q.Name, false, false, message)
 	if nil != err {
 		http.Error(w, "error sending message", http.StatusInternalServerError)
 		return

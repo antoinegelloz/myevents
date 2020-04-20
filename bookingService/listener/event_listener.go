@@ -3,35 +3,40 @@ package listener
 import (
 	"encoding/hex"
 	"encoding/json"
+	"log"
+
 	"github.com/agelloz/reach/bookingService/models"
 	"github.com/agelloz/reach/bookingService/persistence"
 	"github.com/agelloz/reach/contracts"
 	"github.com/streadway/amqp"
 	"gopkg.in/mgo.v2/bson"
-	"log"
 )
 
 type Event interface {
 	EventName() string
 }
 
-type AMQPEventListener struct {
-	Connection *amqp.Connection
-	Queue      string
-	Channel    *amqp.Channel
-}
-
-func Listen(conn *amqp.Connection, dh persistence.DBHandler) error {
+func Listen(AMQPMessageBroker string, dh persistence.DBHandler) {
+	conn, err := amqp.Dial(AMQPMessageBroker)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer conn.Close()
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Println("channel error")
-		return err
+		log.Printf("channel error: %s\n", err)
+		return
 	}
 	defer ch.Close()
-	messages, err := ch.Consume("events_queue", "", true, false, false, false, nil)
+	q, err := ch.QueueDeclare("events_queue", false, false, false, false, nil)
 	if err != nil {
-		log.Println("channel consuming error")
-		return err
+		log.Printf("queue declaring error: %s\n", err)
+		return
+	}
+	messages, err := ch.Consume(q.Name, "", true, false, false, false, nil)
+	if err != nil {
+		log.Printf("channel consuming error: %s\n", err)
+		return
 	}
 	log.Println("listening to events...")
 	forever := make(chan bool)
@@ -75,7 +80,6 @@ func Listen(conn *amqp.Connection, dh persistence.DBHandler) error {
 		}
 	}()
 	<-forever
-	return nil
 }
 
 func HandleEvent(dh persistence.DBHandler, event Event) {
@@ -95,11 +99,15 @@ func HandleEvent(dh persistence.DBHandler, event Event) {
 			newLocation = bson.ObjectIdHex(hex.EncodeToString(e.LocationID))
 		}
 		_, err := dh.AddEvent(models.Event{
-			ID:         newID,
-			Name:       e.Name,
-			LocationID: newLocation,
-			Start:      e.Start,
-			End:        e.End,
+			ID:        newID,
+			Name:      e.Name,
+			StartDate: e.StartDate,
+			EndDate:   e.EndDate,
+			Location: models.Location{
+				ID:      newLocation,
+				Name:    e.LocationName,
+				Country: e.LocationCountry,
+			},
 		})
 		if err != nil {
 			log.Printf("error while adding event to database: %s", err)

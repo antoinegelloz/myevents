@@ -2,13 +2,14 @@ package service
 
 import (
 	"flag"
+	"log"
+	"net/http"
+
 	"github.com/agelloz/reach/bookingService/configuration"
 	"github.com/agelloz/reach/bookingService/listener"
 	"github.com/agelloz/reach/bookingService/persistence"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/streadway/amqp"
-	"log"
-	"net/http"
 )
 
 type BookingServiceHandler struct {
@@ -31,24 +32,7 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		log.Panic(err)
 	}
-	conn, err := amqp.Dial(conf.AMQPMessageBroker)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer conn.Close()
-	ch, err := conn.Channel()
-	if err != nil {
-		return nil, nil
-	}
-	defer ch.Close()
-	_, err = ch.QueueDeclare("events_queue", false, false, false, false, nil)
-	if err != nil {
-		log.Panic(err)
-	}
-	err = listener.Listen(conn, dh)
-	if err != nil {
-		log.Panic(err)
-	}
+	go listener.Listen(conf.AMQPMessageBroker, dh)
 
 	eh := &BookingServiceHandler{
 		DBHandler:   dh,
@@ -66,11 +50,12 @@ func ServeAPI() (chan error, chan error) {
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
 	log.Println("bookingService listening...")
+	server := handlers.CORS()(r)
 	go func() {
-		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", r)
+		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", server)
 	}()
 	go func() {
-		httpErrChan <- http.ListenAndServe(eh.Endpoint, r)
+		httpErrChan <- http.ListenAndServe(eh.Endpoint, server)
 	}()
 	return httpErrChan, httpsErrChan
 }

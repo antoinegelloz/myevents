@@ -17,6 +17,7 @@ const (
 type DBHandler interface {
 	AddEvent(models.Event) ([]byte, error)
 	DeleteEvent(models.Event) error
+	DeleteAllEvents() error
 	GetEventByID([]byte) (models.Event, error)
 	GetEventByName(string) (models.Event, error)
 	GetAllEvents() ([]models.Event, error)

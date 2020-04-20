@@ -1,0 +1,32 @@
+{
+  "name": "reach-ui",
+  "version": "1.0.0",
+  "description": "reach",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agelloz/reach.git"
+  },
+  "author": "Antoine Gelloz",
+  "license": "MIT",
+  "dependencies": {
+    "@types/react": "^16.9.34",
+    "@types/react-dom": "^16.9.6",
+    "bootstrap": "^3.4.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "whatwg-fetch": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/react-router-dom": "^5.1.4",
+    "awesome-typescript-loader": "^5.2.1",
+    "react-router-dom": "^5.1.2",
+    "source-map-loader": "^0.2.4",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  }
+}
