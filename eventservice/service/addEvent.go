@@ -11,7 +11,7 @@ import (
 	"github.com/agelloz/reach/contracts"
 	"github.com/streadway/amqp"
 
-	"github.com/agelloz/reach/eventsService/models"
+	"github.com/agelloz/reach/eventservice/models"
 )
 
 func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.Request) {

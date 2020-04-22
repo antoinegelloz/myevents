@@ -1,9 +1,9 @@
-FROM debian:jessie 
+FROM scratch
  
-COPY eventsService /eventsService 
-RUN  useradd eventsService 
-USER eventsService 
+COPY eventservice /
+ADD certificate /certificate
  
-ENV LISTEN_URL=0.0.0.0:8181 
+ENV LISTEN_URL=0.0.0.0:8181
 EXPOSE 8181 
-CMD ["/eventsService"]
+
+CMD ["./eventservice"]

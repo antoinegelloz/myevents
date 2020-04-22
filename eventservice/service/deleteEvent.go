@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/agelloz/reach/contracts"
-	"github.com/agelloz/reach/eventsService/models"
+	"github.com/agelloz/reach/eventservice/models"
 	"github.com/streadway/amqp"
 	"log"
 	"net/http"

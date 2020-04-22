@@ -3,7 +3,7 @@ package service
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/agelloz/reach/bookingService/models"
+	"github.com/agelloz/reach/bookingservice/models"
 	"log"
 	"net/http"
 

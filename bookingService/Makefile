@@ -13,7 +13,7 @@ override GOPRIVATE=github.com/agelloz/reach
 override MONGODB=mongodb
 
 #user overridable variables
-BINARY_NAME=bookingService
+BINARY_NAME=bookingservice
 TEST_RESULTS=/tmp/$(BINARY_NAME)/test-results
 COVER_RESULTS=/tmp/$(BINARY_NAME)/test-coverage
 PKG=./...

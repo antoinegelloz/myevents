@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	"github.com/agelloz/reach/bookingService/models"
+	"github.com/agelloz/reach/bookingservice/models"
 	"gopkg.in/mgo.v2/bson"
 )
 

@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/agelloz/reach/bookingService/configuration"
-	"github.com/agelloz/reach/bookingService/listener"
-	"github.com/agelloz/reach/bookingService/persistence"
+	"github.com/agelloz/reach/bookingservice/configuration"
+	"github.com/agelloz/reach/bookingservice/listener"
+	"github.com/agelloz/reach/bookingservice/persistence"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )

@@ -7,8 +7,8 @@ import (
 
 	"github.com/streadway/amqp"
 
-	"github.com/agelloz/reach/eventsService/configuration"
-	"github.com/agelloz/reach/eventsService/persistence"
+	"github.com/agelloz/reach/eventservice/configuration"
+	"github.com/agelloz/reach/eventservice/persistence"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )

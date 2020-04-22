@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/agelloz/reach/eventsService/models"
+	"github.com/agelloz/reach/eventservice/models"
 
 	"github.com/gorilla/mux"
 )

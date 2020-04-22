@@ -39,6 +39,15 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		TLSEndpointDefault,
 		AMPQURLDefault,
 	}
+	if listenURL := os.Getenv("LISTEN_URL"); listenURL != "" {
+		conf.Endpoint = listenURL
+	}
+	if dbConn := os.Getenv("MONGODB_URL"); dbConn != "" {
+		conf.DBConnection = dbConn
+	}
+	if broker := os.Getenv("AMQP_BROKER_URL"); broker != "" {
+		conf.AMQPMessageBroker = broker
+	}
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Println("configuration file not found. Continuing with default values:")
@@ -46,8 +55,5 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		return conf, nil
 	}
 	err = json.NewDecoder(file).Decode(&conf)
-	if broker := os.Getenv("AMQP_URL"); broker != "" {
-		conf.AMQPMessageBroker = broker
-	}
 	return conf, err
 }

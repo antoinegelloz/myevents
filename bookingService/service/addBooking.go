@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/agelloz/reach/bookingService/models"
+	"github.com/agelloz/reach/bookingservice/models"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
