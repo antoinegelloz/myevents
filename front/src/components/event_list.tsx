@@ -7,13 +7,14 @@ export interface EventListProps {
 } 
  
 export class EventList extends React.Component<EventListProps, {}> { 
-  render() { 
-    const items = this.props.events.map(e => 
-      <EventListItem event={e} /> 
-    ); 
+  render() {
+    var items:JSX.Element[] = null
+    if (this.props.events) {
+      items = this.props.events.map(e => <EventListItem event={e} />);
+    }
  
     return <table className="table"> 
-      <thead> 
+      <thead>
         <tr> 
           <th>Event</th> 
           <th>Where</th> 

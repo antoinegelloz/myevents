@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/streadway/amqp"
 
@@ -29,15 +30,25 @@ func ServeAPI() (chan error, chan error) {
 	if err != nil {
 		panic(err)
 	}
-	conn, err := amqp.Dial(conf.AMQPMessageBroker)
-	if err != nil {
-		panic(err)
+
+	var conn *amqp.Connection
+	log.Println("connecting to AMQP message broker...")
+	conn, err = amqp.Dial(conf.AMQPMessageBroker)
+	for err != nil {
+		log.Printf("AMQP connection error: %s\n", err)
+		time.Sleep(2000000000)
+		conn, err = amqp.Dial(conf.AMQPMessageBroker)
 	}
+
+	var dh persistence.DBHandler
 	log.Println("connecting to database...")
-	dh, err := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
-	if err != nil {
-		panic(err)
+	dh, err = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	for err != nil {
+		log.Printf("database connection error: %s\n", err)
+		time.Sleep(2000000000)
+		dh, err = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	}
+
 	eh := &EventsServiceHandler{
 		DbHandler:      dh,
 		Endpoint:       conf.Endpoint,

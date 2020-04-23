@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/agelloz/reach/bookingservice/models"
 	"github.com/agelloz/reach/bookingservice/persistence"
@@ -17,17 +18,27 @@ type Event interface {
 }
 
 func Listen(AMQPMessageBroker string, dh persistence.DBHandler) {
-	conn, err := amqp.Dial(AMQPMessageBroker)
-	if err != nil {
-		log.Panic(err)
+	var err error
+	var conn *amqp.Connection
+	log.Println("connecting to AMQP message broker...")
+	conn, err = amqp.Dial(AMQPMessageBroker)
+	for err != nil {
+		log.Printf("AMQP connection error: %s\n", err)
+		time.Sleep(2000000000)
+		conn, err = amqp.Dial(AMQPMessageBroker)
 	}
 	defer conn.Close()
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Printf("channel error: %s\n", err)
-		return
+
+	var ch *amqp.Channel
+	log.Println("opening channel to AMQP message broker...")
+	ch, err = conn.Channel()
+	for err != nil {
+		log.Printf("AMQP channel error: %s\n", err)
+		time.Sleep(2000000000)
+		ch, err = conn.Channel()
 	}
 	defer ch.Close()
+
 	q, err := ch.QueueDeclare("events_queue", false, false, false, false, nil)
 	if err != nil {
 		log.Printf("queue declaring error: %s\n", err)
