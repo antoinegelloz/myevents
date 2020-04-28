@@ -7,10 +7,10 @@ import {Navigation} from "./components/navigation";
 
 class App extends React.Component<{}, {}> { 
   render() { 
-    const eventList = () => <EventListContainer eventListURL="http://localhost:8181/events" />; 
+    const eventList = () => <EventListContainer eventListURL="https://events.gelloz.org/events" />; 
     const eventBooking = ({match}: any) => <EventBookingFormContainer eventID={match.params.id} 
-        eventServiceURL="http://localhost:8181" 
-        bookingServiceURL="http://localhost:8282" />; 
+        eventServiceURL="https://events.gelloz.org" 
+        bookingServiceURL="https://bookings.gelloz.org" />; 
    
     return <Router> 
       <Navigation brandName="My Events"/>
