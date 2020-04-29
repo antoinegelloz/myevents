@@ -30,6 +30,6 @@ services:
       - MONGODB_URL=mongodb://bookingservicedb/bookings
 
   frontend: 
-    build: ./front 
+    build: ./frontend
     ports: 
       - "80:80"

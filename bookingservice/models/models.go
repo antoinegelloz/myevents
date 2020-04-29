@@ -8,11 +8,12 @@ import (
 
 // Booking represents an event booking
 type Booking struct {
-	ID       bson.ObjectId `bson:"_id"`
-	EventID  bson.ObjectId `bson:"event_id"`
-	UserID   bson.ObjectId `bson:"user_id"`
-	Date     time.Time     `json:"booking_date"`
-	Quantity uint          `json:"booking_quantity"`
+	ID        bson.ObjectId `bson:"_id"`
+	EventID   bson.ObjectId `bson:"event_id"`
+	UserID    bson.ObjectId `bson:"user_id"`
+	UserEmail string        `json:"user_email"`
+	Date      time.Time     `json:"booking_date"`
+	Quantity  uint          `json:"booking_quantity"`
 }
 
 // Event represents an event
