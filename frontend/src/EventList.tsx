@@ -30,18 +30,22 @@ const useStyles = makeStyles({
   },
 });
 
-export default function EventList() {
+interface EventListProps {
+    eventserviceURL: string,
+}
+
+export default function EventList(props: EventListProps) {
     const classes = useStyles();
     const [result, setResult] = useState<Service<Event[]>>({
         status: 'loading'
       });
     
       useEffect(() => {
-        fetch('https://events.gelloz.org/events')
+        fetch(props.eventserviceURL + '/events')
           .then(response => response.json())
           .then(response => setResult({ status: 'ready', payload: response }))
           .catch(error => setResult({ status: 'error', error }));
-      }, []);
+      }, [props.eventserviceURL]);
 
     return (
     <Container>

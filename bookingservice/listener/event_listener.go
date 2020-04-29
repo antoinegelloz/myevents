@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/agelloz/reach/bookingservice/models"
-	"github.com/agelloz/reach/bookingservice/persistence"
-	"github.com/agelloz/reach/contracts"
+	"github.com/agelloz/myevents/bookingservice/models"
+	"github.com/agelloz/myevents/bookingservice/persistence"
+	"github.com/agelloz/myevents/contracts"
 	"github.com/streadway/amqp"
 	"gopkg.in/mgo.v2/bson"
 )

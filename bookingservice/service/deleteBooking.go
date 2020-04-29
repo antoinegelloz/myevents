@@ -1,9 +1,10 @@
+/*
 package service
 
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/agelloz/reach/bookingservice/models"
+	"github.com/agelloz/myevents/bookingservice/models"
 	"log"
 	"net/http"
 
@@ -35,3 +36,4 @@ func (eh *BookingServiceHandler) DeleteBookingHandler(w http.ResponseWriter, r *
 	}
 	log.Printf("deleted booking from database ID:%s\n", booking.ID)
 }
+*/

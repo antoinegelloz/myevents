@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	"github.com/agelloz/reach/eventservice/models"
+	"github.com/agelloz/myevents/eventservice/models"
 
 	"gopkg.in/mgo.v2/bson"
 )

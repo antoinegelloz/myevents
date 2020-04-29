@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/agelloz/reach/eventservice/service"
+	"github.com/agelloz/myevents/eventservice/service"
 )
 
 func main() {

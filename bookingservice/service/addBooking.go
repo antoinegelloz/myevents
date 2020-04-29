@@ -1,3 +1,4 @@
+/*
 package service
 
 import (
@@ -6,9 +7,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/smtp"
 	"time"
 
-	"github.com/agelloz/reach/bookingservice/models"
+	"github.com/agelloz/myevents/bookingservice/models"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -50,4 +52,19 @@ func (eh *BookingServiceHandler) AddBookingHandler(w http.ResponseWriter, r *htt
 		return
 	}
 	log.Printf("added new booking ID:%s for event ID:%s quantity:%d\n", bson.ObjectId(id).Hex(), newBooking.EventID.Hex(), newBooking.Quantity)
+
+	auth := smtp.PlainAuth("", eh.SMTPUsername, eh.SMTPPassword, eh.SMTPHost)
+	to := []string{newBooking.UserEmail}
+	msg := []byte("To: " + newBooking.UserEmail + "\r\n" +
+		"Subject: See you soon at " + event.Name + "!\r\n" +
+		"\r\n" +
+		"Your booking has been confirmed. Congratulations!\n\nBooking ID: " + bson.ObjectId(id).Hex() + "\r\n")
+	log.Printf("sending mail to:%s message:%s\n", to, msg)
+	err = smtp.SendMail(eh.SMTPAddr, auth, eh.SMTPUsername, to, msg)
+	if err != nil {
+		log.Printf("SMTP error: %s\n", err)
+		http.Error(w, fmt.Sprintf("cannot send email for event ID: %s", newBooking.EventID.Hex()), http.StatusInternalServerError)
+		return
+	}
 }
+*/

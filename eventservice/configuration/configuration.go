@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/agelloz/reach/eventservice/persistence"
+	"github.com/agelloz/myevents/eventservice/persistence"
 )
 
 var (

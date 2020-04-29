@@ -1,8 +1,9 @@
 package persistence
 
 import (
-	"github.com/agelloz/reach/bookingservice/models"
-	"github.com/agelloz/reach/bookingservice/mongodb"
+	"github.com/agelloz/myevents/bookingservice/models"
+	"github.com/agelloz/myevents/bookingservice/mongodb"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // DBType is type
@@ -15,16 +16,16 @@ const (
 
 // DBHandler is used to communicate with the database
 type DBHandler interface {
-	AddEvent(models.Event) ([]byte, error)
+	AddEvent(models.Event) (bson.ObjectId, error)
 	DeleteEvent(models.Event) error
-	GetEventByID([]byte) (models.Event, error)
-	GetEventByName(string) (models.Event, error)
-	DeleteAllEvents() error
-	GetAllEvents() ([]models.Event, error)
-	AddBooking(models.Booking) ([]byte, error)
-	DeleteBooking(models.Booking) error
-	GetBookingByID([]byte) (models.Booking, error)
-	GetAllBookings() ([]models.Booking, error)
+	//GetEventByID([]byte) (models.Event, error)
+	//GetEventByName(string) (models.Event, error)
+	//DeleteAllEvents() error
+	//GetAllEvents() ([]models.Event, error)
+	//AddBooking(models.Booking) ([]byte, error)
+	//DeleteBooking(models.Booking) error
+	//GetBookingByID([]byte) (models.Booking, error)
+	//GetAllBookings() ([]models.Booking, error)
 }
 
 // NewPersistenceLayer is

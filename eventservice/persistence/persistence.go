@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	"github.com/agelloz/reach/eventservice/models"
-	"github.com/agelloz/reach/eventservice/mongodb"
+	"github.com/agelloz/myevents/eventservice/models"
+	"github.com/agelloz/myevents/eventservice/mongodb"
 )
 
 // DBTYPE is type

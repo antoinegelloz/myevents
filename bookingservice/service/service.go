@@ -6,17 +6,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/agelloz/reach/bookingservice/configuration"
-	"github.com/agelloz/reach/bookingservice/listener"
-	"github.com/agelloz/reach/bookingservice/persistence"
+	"github.com/agelloz/myevents/bookingservice/configuration"
+	"github.com/agelloz/myevents/bookingservice/listener"
+	"github.com/agelloz/myevents/bookingservice/persistence"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 type BookingServiceHandler struct {
-	DBHandler   persistence.DBHandler
-	Endpoint    string
-	TLSEndpoint string
+	DBHandler    persistence.DBHandler
+	Endpoint     string
+	TLSEndpoint  string
+	SMTPUsername string
+	SMTPPassword string
+	SMTPHost     string
+	SMTPAddr     string
 }
 
 // ServeAPI is
@@ -34,26 +38,31 @@ func ServeAPI() (chan error, chan error) {
 		log.Println("connecting to database...")
 		dh, err = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 		if err != nil {
-			log.Println("failed to connect to database")
+			log.Println("waiting to connect to database")
 			time.Sleep(2000000000)
 		}
 	}
+	log.Println("connected to database")
 
 	go listener.Listen(conf.AMQPMessageBroker, dh)
 
 	eh := &BookingServiceHandler{
-		DBHandler:   dh,
-		Endpoint:    conf.Endpoint,
-		TLSEndpoint: conf.TLSEndpoint,
+		DBHandler:    dh,
+		Endpoint:     conf.Endpoint,
+		TLSEndpoint:  conf.TLSEndpoint,
+		SMTPUsername: conf.SMTPUsername,
+		SMTPPassword: conf.SMTPPassword,
+		SMTPHost:     conf.SMTPHost,
+		SMTPAddr:     conf.SMTPAddr,
 	}
 
 	r := mux.NewRouter()
 	s := r.PathPrefix("/events").Subrouter()
 	s.Methods("GET").Path("").HandlerFunc(eh.GetAllEventsHandler)
-	s.Methods("DELETE").Path("").HandlerFunc(eh.DeleteAllEventsHandler)
-	s.Methods("GET").Path("/bookings").HandlerFunc(eh.GetAllBookingsHandler)
-	s.Methods("POST").Path("/bookings/{eventID}").HandlerFunc(eh.AddBookingHandler)
-	s.Methods("DELETE").Path("/bookings/{eventID}").HandlerFunc(eh.DeleteBookingHandler)
+	//s.Methods("DELETE").Path("").HandlerFunc(eh.DeleteAllEventsHandler)
+	//s.Methods("GET").Path("/bookings").HandlerFunc(eh.GetAllBookingsHandler)
+	//s.Methods("POST").Path("/bookings/{eventID}").HandlerFunc(eh.AddBookingHandler)
+	//s.Methods("DELETE").Path("/bookings/{eventID}").HandlerFunc(eh.DeleteBookingHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
 	log.Println("bookingService listening...")

@@ -5,7 +5,7 @@ import BookingForm from './BookingForm';
 import event from './event.jpg';
 
 export default function App() {
-    const eventList = () => <EventList/>; 
+    const eventList = () => <EventList eventserviceURL="http://localhost:8181" />
     const eventBooking = ({match}: any) => <BookingForm eventID={match.params.id} 
       eventserviceURL="http://localhost:8181"
       bookingserviceURL="http://localhost:8282"/>; 

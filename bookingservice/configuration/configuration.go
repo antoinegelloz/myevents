@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/agelloz/reach/bookingservice/persistence"
+	"github.com/agelloz/myevents/bookingservice/persistence"
 )
 
 var (
@@ -28,6 +28,10 @@ type ServiceConfig struct {
 	Endpoint          string             `json:"endpoint"`
 	TLSEndpoint       string             `json:"tlsEndpoint"`
 	AMQPMessageBroker string             `json:"amqp_message_broker"`
+	SMTPUsername      string             `json:"smtp_username"`
+	SMTPPassword      string             `json:"smtp_password"`
+	SMTPHost          string             `json:"smtp_host"`
+	SMTPAddr          string             `json:"smtp_addr"`
 }
 
 // ExtractConfiguration is
@@ -38,15 +42,10 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		EndpointDefault,
 		TLSEndpointDefault,
 		AMPQURLDefault,
-	}
-	if listenURL := os.Getenv("LISTEN_URL"); listenURL != "" {
-		conf.Endpoint = listenURL
-	}
-	if dbConn := os.Getenv("MONGODB_URL"); dbConn != "" {
-		conf.DBConnection = dbConn
-	}
-	if broker := os.Getenv("AMQP_BROKER_URL"); broker != "" {
-		conf.AMQPMessageBroker = broker
+		"",
+		"",
+		"",
+		"",
 	}
 	file, err := os.Open(filename)
 	if err != nil {
@@ -55,5 +54,6 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		return conf, nil
 	}
 	err = json.NewDecoder(file).Decode(&conf)
+	log.Printf("%+v\n", conf)
 	return conf, err
 }

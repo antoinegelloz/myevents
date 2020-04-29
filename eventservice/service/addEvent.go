@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/agelloz/reach/contracts"
+	"github.com/agelloz/myevents/contracts"
 	"github.com/streadway/amqp"
 
-	"github.com/agelloz/reach/eventservice/models"
+	"github.com/agelloz/myevents/eventservice/models"
 )
 
 func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.Request) {

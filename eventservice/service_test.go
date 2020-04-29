@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/agelloz/reach/eventservice/configuration"
-	"github.com/agelloz/reach/eventservice/persistence"
-	"github.com/agelloz/reach/eventservice/service"
+	"github.com/agelloz/myevents/eventservice/configuration"
+	"github.com/agelloz/myevents/eventservice/persistence"
+	"github.com/agelloz/myevents/eventservice/service"
 	"github.com/gorilla/mux"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"

@@ -1,27 +1,33 @@
 package mongodb
 
 import (
-	"github.com/agelloz/reach/bookingservice/models"
+	"context"
+	"time"
+
+	"github.com/agelloz/myevents/bookingservice/models"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // AddEvent adds an event
-func (mgoLayer *DBLayer) AddEvent(e models.Event) ([]byte, error) {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
+func (mgoLayer *DBLayer) AddEvent(e models.Event) (bson.ObjectId, error) {
+	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
 	if !e.ID.Valid() {
 		e.ID = bson.NewObjectId()
 	}
-	return []byte(e.ID), s.DB(DB).C(EVENTS).Insert(e)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	res, err := collection.InsertOne(ctx, e)
+	return res.InsertedID.(bson.ObjectId), err
 }
 
 // DeleteEvent deletes an event
 func (mgoLayer *DBLayer) DeleteEvent(e models.Event) error {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
-	return s.DB(DB).C(EVENTS).Remove(e)
+	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	_, err := collection.DeleteOne(ctx, e)
+	return err
 }
 
+/*
 // DeleteAllEvents deletes all events
 func (mgoLayer *DBLayer) DeleteAllEvents() error {
 	s := mgoLayer.session.Copy()
@@ -29,16 +35,17 @@ func (mgoLayer *DBLayer) DeleteAllEvents() error {
 	_, err := s.DB(DB).C(EVENTS).RemoveAll(nil)
 	return err
 }
-
+*/
 // GetEventByID returns an event
 func (mgoLayer *DBLayer) GetEventByID(id []byte) (models.Event, error) {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
+	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
 	e := models.Event{}
-	err := s.DB(DB).C(EVENTS).FindId(bson.ObjectId(id)).One(&e)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	err := collection.FindOne(ctx, bson.ObjectId(id)).Decode(&e)
 	return e, err
 }
 
+/*
 // GetEventByName returns an event
 func (mgoLayer *DBLayer) GetEventByName(name string) (models.Event, error) {
 	s := mgoLayer.session.Copy()
@@ -47,16 +54,18 @@ func (mgoLayer *DBLayer) GetEventByName(name string) (models.Event, error) {
 	err := s.DB(DB).C(EVENTS).Find(bson.M{"name": name}).One(&e)
 	return e, err
 }
-
+*/
 // GetAllEvents returns all available events
 func (mgoLayer *DBLayer) GetAllEvents() ([]models.Event, error) {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
+	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
 	var events []models.Event
-	err := s.DB(DB).C(EVENTS).Find(nil).All(&events)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	cursor, err := collection.Find(ctx, bson.D{})
+	cursor.Decode(&events)
 	return events, err
 }
 
+/*
 // AddBooking adds a booking
 func (mgoLayer *DBLayer) AddBooking(b models.Booking) ([]byte, error) {
 	s := mgoLayer.session.Copy()
@@ -94,3 +103,4 @@ func (mgoLayer *DBLayer) GetBookingByID(id []byte) (models.Booking, error) {
 	err := s.DB(DB).C(BOOKINGS).FindId(bson.ObjectId(id)).One(&b)
 	return b, err
 }
+*/

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/agelloz/reach/bookingservice/service"
+	"github.com/agelloz/myevents/bookingservice/service"
 	"log"
 )
 

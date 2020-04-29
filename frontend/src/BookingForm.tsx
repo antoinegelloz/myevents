@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Event from "./models/event";
-import { Grid, Typography, Button, LinearProgress } from '@material-ui/core';
-import Divider from '@material-ui/core/Divider';
+import { Grid, Typography, Button, LinearProgress, Divider } from '@material-ui/core';
 import { Service } from './Service';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import { Formik, Form, Field } from 'formik';
@@ -56,7 +55,7 @@ export default function BookingForm(props: BookingFormProps) {
             .then(response => response.json())
             .then(response => setResult({ status: 'ready', payload: response }))
             .catch(error => setResult({ status: 'error', error }));
-    });
+    }, [props.eventID, props.eventserviceURL]);
 
     return (
     <React.Fragment>

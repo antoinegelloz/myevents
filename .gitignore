@@ -17,3 +17,5 @@
 .idea/*
 
 front/node_modules/*
+eventservice/.env
+bookingservice/.env
