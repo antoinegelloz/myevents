@@ -7,7 +7,7 @@ override GOCLEAN=$(GOCMD) clean
 override GOTEST=$(GOCMD) test
 override GOGET=$(GOCMD) get
 override GOENV=$(GOCMD) env
-override GOPRIVATE=github.com/agelloz/reach
+override GOPRIVATE=github.com/agelloz/myevents
 
 #external services (see docker compose file)
 override MONGODB=mongodb

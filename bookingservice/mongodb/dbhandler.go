@@ -36,6 +36,7 @@ func (mgoLayer *DBLayer) DeleteAllEvents() error {
 	return err
 }
 */
+
 // GetEventByID returns an event
 func (mgoLayer *DBLayer) GetEventByID(id []byte) (models.Event, error) {
 	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
@@ -55,6 +56,7 @@ func (mgoLayer *DBLayer) GetEventByName(name string) (models.Event, error) {
 	return e, err
 }
 */
+
 // GetAllEvents returns all available events
 func (mgoLayer *DBLayer) GetAllEvents() ([]models.Event, error) {
 	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
