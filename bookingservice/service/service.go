@@ -2,15 +2,13 @@ package service
 
 import (
 	"flag"
-	"log"
-	"net/http"
-	"time"
-
 	"github.com/agelloz/myevents/bookingservice/configuration"
 	"github.com/agelloz/myevents/bookingservice/listener"
 	"github.com/agelloz/myevents/bookingservice/persistence"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"log"
+	"net/http"
 )
 
 type BookingServiceHandler struct {
@@ -33,15 +31,7 @@ func ServeAPI() (chan error, chan error) {
 		panic(err)
 	}
 
-	var dh persistence.DBHandler
-	for dh == nil {
-		log.Println("connecting to database...")
-		dh, err = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
-		if err != nil {
-			log.Println("waiting to connect to database")
-			time.Sleep(2000000000)
-		}
-	}
+	dh := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	log.Println("connected to database")
 
 	go listener.Listen(conf.AMQPMessageBroker, dh)

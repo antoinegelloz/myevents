@@ -1,9 +1,6 @@
 package service
 
 import (
-	"encoding/hex"
-	"fmt"
-	"github.com/agelloz/myevents/bookingservice/models"
 	"log"
 	"net/http"
 
@@ -17,21 +14,9 @@ func (eh *BookingServiceHandler) DeleteBookingHandler(w http.ResponseWriter, r *
 		http.Error(w, "Bad request (nameOrID)", http.StatusBadRequest)
 		return
 	}
-	var booking models.Booking
-	id, err := hex.DecodeString(eventID)
-	if err == nil {
-		booking, err = eh.DBHandler.GetBookingByID(id)
-	}
-	if err != nil {
-		http.Error(w, "Cannot find booking to delete by ID", http.StatusNotFound)
-		return
-	}
+	booking := eh.DBHandler.GetBookingByID(eventID)
 	log.Printf("got event to delete a booking by ID %s\n", booking.ID)
 
-	err = eh.DBHandler.DeleteBooking(booking)
-	if nil != err {
-		http.Error(w, fmt.Sprintf("Cannot delete booking ID: %s", booking.ID), http.StatusInternalServerError)
-		return
-	}
+	eh.DBHandler.DeleteBooking(booking)
 	log.Printf("deleted booking from database ID:%s\n", booking.ID)
 }

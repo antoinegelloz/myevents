@@ -16,23 +16,23 @@ const (
 
 // DBHandler is used to communicate with the database
 type DBHandler interface {
-	AddEvent(e models.Event) primitive.ObjectID
-	DeleteEvent(e models.Event)
-	GetEventByID(ID string) models.Event
-	GetEventByName(name string) models.Event
+	AddEvent(e *models.Event) primitive.ObjectID
+	DeleteEvent(e *models.Event)
+	GetEventByID(ID string) *models.Event
+	GetEventByName(name string) *models.Event
 	DeleteAllEvents()
-	GetAllEvents() []models.Event
-	AddBooking(b models.Booking) primitive.ObjectID
-	DeleteBooking(b models.Booking)
-	GetBookingByID(ID string) models.Booking
-	GetAllBookings() []models.Booking
+	GetAllEvents() []*models.Event
+	AddBooking(b *models.Booking) primitive.ObjectID
+	DeleteBooking(b *models.Booking)
+	GetBookingByID(ID string) *models.Booking
+	GetAllBookings() []*models.Booking
 }
 
 // NewPersistenceLayer is
-func NewPersistenceLayer(options DBType, uri string) (DBHandler, error) {
+func NewPersistenceLayer(options DBType, uri string) DBHandler {
 	switch options {
 	case MONGODB:
 		return mongodb.NewDBLayer(uri)
 	}
-	return nil, nil
+	return nil
 }

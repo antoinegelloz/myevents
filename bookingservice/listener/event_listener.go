@@ -3,6 +3,7 @@ package listener
 import (
 	"encoding/hex"
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"time"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/agelloz/myevents/bookingservice/persistence"
 	"github.com/agelloz/myevents/contracts"
 	"github.com/streadway/amqp"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Event interface {
@@ -96,50 +96,33 @@ func Listen(AMQPMessageBroker string, dh persistence.DBHandler) {
 func HandleEvent(dh persistence.DBHandler, event Event) {
 	switch e := event.(type) {
 	case *contracts.EventCreatedEvent:
-		var newID bson.ObjectId
-		if !bson.IsObjectIdHex(hex.EncodeToString(e.ID)) {
-			log.Printf("Not valid ID|%s|", hex.EncodeToString(e.ID))
-			newID = bson.NewObjectId()
-		} else {
-			newID = bson.ObjectIdHex(hex.EncodeToString(e.ID))
+		objID, err := primitive.ObjectIDFromHex(hex.EncodeToString(e.ID))
+		if err != nil {
+			log.Fatal(err)
 		}
-		var newLocation bson.ObjectId
-		if !bson.IsObjectIdHex(hex.EncodeToString(e.LocationID)) {
-			newLocation = bson.NewObjectId()
-		} else {
-			newLocation = bson.ObjectIdHex(hex.EncodeToString(e.LocationID))
-		}
-		_, err := dh.AddEvent(models.Event{
-			ID:        newID,
+		newID := dh.AddEvent(&models.Event{
+			ID:        objID,
 			Name:      e.Name,
 			StartDate: e.StartDate,
 			EndDate:   e.EndDate,
 			Location: models.Location{
-				ID:      newLocation,
 				Name:    e.LocationName,
 				Country: e.LocationCountry,
 			},
 		})
-		if err != nil {
+		if newID != objID {
 			log.Printf("error while adding event to database: %s", err)
 		} else {
 			log.Printf("added event %s to database: %+v", hex.EncodeToString(e.ID), e)
 		}
 	case *contracts.EventDeletedEvent:
-		if !bson.IsObjectIdHex(hex.EncodeToString(e.ID)) {
+		_, err := primitive.ObjectIDFromHex(hex.EncodeToString(e.ID))
+		if err != nil {
 			log.Printf("error while deleting event from database: invalid ID |%s|", hex.EncodeToString(e.ID))
 		} else {
-			foundEvent, err := dh.GetEventByID(e.ID)
-			if err != nil {
-				log.Printf("error while deleting event from database: %s", err)
-			} else {
-				err := dh.DeleteEvent(foundEvent)
-				if err != nil {
-					log.Printf("error while deleting event from database: %s", err)
-				} else {
-					log.Printf("deleted event %s from database: %+v", hex.EncodeToString(e.ID), e)
-				}
-			}
+			foundEvent := dh.GetEventByID(hex.EncodeToString(e.ID))
+			dh.DeleteEvent(foundEvent)
+			log.Printf("deleted event %s from database: %+v", hex.EncodeToString(e.ID), e)
 		}
 	default:
 		log.Printf("unknown event: %t", e)
