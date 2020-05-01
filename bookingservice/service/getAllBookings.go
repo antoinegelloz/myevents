@@ -1,7 +1,5 @@
 package service
 
-/*
-
 import (
 	"encoding/json"
 	"log"
@@ -21,4 +19,3 @@ func (eh *BookingServiceHandler) GetAllBookingsHandler(w http.ResponseWriter, r 
 	}
 	log.Println("got all bookings")
 }
-*/

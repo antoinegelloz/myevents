@@ -2,12 +2,9 @@ package mongodb
 
 import (
 	"context"
-	"log"
-	"time"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
 )
 
 const (
@@ -25,14 +22,16 @@ type DBLayer struct {
 }
 
 // NewDBLayer is a constructor function to obtain a connection session handler to the desired MongoDB
-func NewDBLayer(connection string) (*DBLayer, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connection))
+func NewDBLayer(uri string) (*DBLayer, error) {
+	clientOptions := options.Client().ApplyURI(uri)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = client.Ping(ctx, readpref.Primary())
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return &DBLayer{
 		client: client,
 	}, err

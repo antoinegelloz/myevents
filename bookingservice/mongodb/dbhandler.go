@@ -2,107 +2,121 @@ package mongodb
 
 import (
 	"context"
-	"time"
-
 	"github.com/agelloz/myevents/bookingservice/models"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 )
 
 // AddEvent adds an event
-func (mgoLayer *DBLayer) AddEvent(e models.Event) (bson.ObjectId, error) {
-	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
-	if !e.ID.Valid() {
-		e.ID = bson.NewObjectId()
+func (mgoLayer *DBLayer) AddEvent(e models.Event) primitive.ObjectID {
+	res, err := mgoLayer.client.Database(DB).Collection(EVENTS).InsertOne(context.TODO(), e)
+	if err != nil {
+		log.Fatal(err)
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	res, err := collection.InsertOne(ctx, e)
-	return res.InsertedID.(bson.ObjectId), err
+	log.Println("AddEvent: inserted a single document: ", res.InsertedID)
+	return res.InsertedID.(primitive.ObjectID)
 }
 
 // DeleteEvent deletes an event
-func (mgoLayer *DBLayer) DeleteEvent(e models.Event) error {
-	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	_, err := collection.DeleteOne(ctx, e)
-	return err
+func (mgoLayer *DBLayer) DeleteEvent(e models.Event) {
+	deleteResult, err := mgoLayer.client.Database(DB).Collection(EVENTS).DeleteOne(context.TODO(), e)
+	log.Printf("DeleteEvent: deleted %v documents\n", deleteResult.DeletedCount)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-/*
 // DeleteAllEvents deletes all events
-func (mgoLayer *DBLayer) DeleteAllEvents() error {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
-	_, err := s.DB(DB).C(EVENTS).RemoveAll(nil)
-	return err
+func (mgoLayer *DBLayer) DeleteAllEvents() {
+	deleteResult, err := mgoLayer.client.Database(DB).Collection(EVENTS).DeleteMany(context.TODO(), bson.D{{}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("DeleteAllEvents: deleted %v documents\n", deleteResult.DeletedCount)
 }
-*/
 
 // GetEventByID returns an event
-func (mgoLayer *DBLayer) GetEventByID(id []byte) (models.Event, error) {
-	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
-	e := models.Event{}
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	err := collection.FindOne(ctx, bson.ObjectId(id)).Decode(&e)
-	return e, err
+func (mgoLayer *DBLayer) GetEventByID(ID string) (e models.Event) {
+	eventID, err := primitive.ObjectIDFromHex(ID)
+	if err != nil{
+		log.Println("GetEventByID: invalid ObjectID: ", ID)
+		return
+	}
+	result := mgoLayer.client.Database(DB).Collection(EVENTS).FindOne(context.Background(), bson.M{"_id": eventID})
+	result.Decode(&e)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("GetEventByID: ", e)
+	return
 }
 
-/*
 // GetEventByName returns an event
-func (mgoLayer *DBLayer) GetEventByName(name string) (models.Event, error) {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
-	var e models.Event
-	err := s.DB(DB).C(EVENTS).Find(bson.M{"name": name}).One(&e)
-	return e, err
-}
-*/
-
-// GetAllEvents returns all available events
-func (mgoLayer *DBLayer) GetAllEvents() ([]models.Event, error) {
-	collection := mgoLayer.client.Database(DB).Collection(EVENTS)
-	var events []models.Event
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	cursor, err := collection.Find(ctx, bson.D{})
-	cursor.Decode(&events)
-	return events, err
+func (mgoLayer *DBLayer) GetEventByName(name string) (e models.Event) {
+	result := mgoLayer.client.Database(DB).Collection(EVENTS).FindOne(context.Background(), bson.M{"name": name})
+	result.Decode(&e)
+	log.Println("GetEventByName: ", e)
+	return
 }
 
-/*
+// GetAllEvents returns all events
+func (mgoLayer *DBLayer) GetAllEvents() (e []models.Event) {
+	cursor, err := mgoLayer.client.Database(DB).Collection(EVENTS).Find(context.TODO(), bson.D{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = cursor.Decode(&e)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
+
 // AddBooking adds a booking
-func (mgoLayer *DBLayer) AddBooking(b models.Booking) ([]byte, error) {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
-	if !b.ID.Valid() {
-		b.ID = bson.NewObjectId()
+func (mgoLayer *DBLayer) AddBooking(b models.Booking) primitive.ObjectID {
+	res, err := mgoLayer.client.Database(DB).Collection(BOOKINGS).InsertOne(context.TODO(), b)
+	if err != nil {
+		log.Fatal(err)
 	}
-	if !b.UserID.Valid() {
-		b.UserID = bson.NewObjectId()
-	}
-	return []byte(b.ID), s.DB(DB).C(BOOKINGS).Insert(b)
+	log.Println("AddBooking: inserted a single document: ", res.InsertedID)
+	return res.InsertedID.(primitive.ObjectID)
 }
 
 // DeleteBooking deletes a booking
-func (mgoLayer *DBLayer) DeleteBooking(b models.Booking) error {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
-	return s.DB(DB).C(BOOKINGS).Remove(b)
+func (mgoLayer *DBLayer) DeleteBooking(b models.Booking) {
+	deleteResult, err := mgoLayer.client.Database(DB).Collection(BOOKINGS).DeleteOne(context.TODO(), b)
+	log.Printf("DeleteBooking: deleted %v documents\n", deleteResult.DeletedCount)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // GetAllBookings returns all bookings
-func (mgoLayer *DBLayer) GetAllBookings() ([]models.Booking, error) {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
-	var bookings []models.Booking
-	err := s.DB(DB).C(BOOKINGS).Find(nil).All(&bookings)
-	return bookings, err
+func (mgoLayer *DBLayer) GetAllBookings() (b []models.Booking) {
+	cursor, err := mgoLayer.client.Database(DB).Collection(BOOKINGS).Find(context.TODO(), bson.D{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = cursor.Decode(&b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
 }
 
 // GetBookingByID returns an booking
-func (mgoLayer *DBLayer) GetBookingByID(id []byte) (models.Booking, error) {
-	s := mgoLayer.session.Copy()
-	defer s.Close()
-	b := models.Booking{}
-	err := s.DB(DB).C(BOOKINGS).FindId(bson.ObjectId(id)).One(&b)
-	return b, err
+func (mgoLayer *DBLayer) GetBookingByID(ID string) (b models.Booking) {
+	bookingID, err := primitive.ObjectIDFromHex(ID)
+	if err != nil{
+		log.Println("GetBookingByID: invalid ObjectID: ", ID)
+		return
+	}
+	result := mgoLayer.client.Database(DB).Collection(BOOKINGS).FindOne(context.Background(), bson.M{"_id": bookingID})
+	result.Decode(&b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("GetEventByID: ", b)
+	return
 }
-*/

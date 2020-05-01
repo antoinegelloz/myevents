@@ -1,7 +1,5 @@
 package service
 
-/*
-
 import (
 	"encoding/hex"
 	"fmt"
@@ -37,4 +35,3 @@ func (eh *BookingServiceHandler) DeleteBookingHandler(w http.ResponseWriter, r *
 	}
 	log.Printf("deleted booking from database ID:%s\n", booking.ID)
 }
-*/

@@ -1,7 +1,5 @@
 package service
 
-/*
-
 import (
 	"log"
 	"net/http"
@@ -15,4 +13,3 @@ func (eh *BookingServiceHandler) DeleteAllEventsHandler(w http.ResponseWriter, r
 	}
 	log.Println("deleted all events")
 }
-*/

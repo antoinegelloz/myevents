@@ -1,7 +1,5 @@
 package service
 
-/*
-
 import (
 	"encoding/hex"
 	"encoding/json"
@@ -13,7 +11,7 @@ import (
 
 	"github.com/agelloz/myevents/bookingservice/models"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (eh *BookingServiceHandler) AddBookingHandler(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +42,6 @@ func (eh *BookingServiceHandler) AddBookingHandler(w http.ResponseWriter, r *htt
 		http.Error(w, "cannot decode booking data", http.StatusInternalServerError)
 		return
 	}
-	newBooking.EventID = bson.ObjectId(id)
 	newBooking.Date = time.Now()
 	id, err = eh.DBHandler.AddBooking(newBooking)
 	if err != nil {
@@ -68,4 +65,3 @@ func (eh *BookingServiceHandler) AddBookingHandler(w http.ResponseWriter, r *htt
 		return
 	}
 }
-*/
