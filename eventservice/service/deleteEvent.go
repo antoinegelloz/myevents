@@ -48,13 +48,8 @@ func (eh *EventsServiceHandler) DeleteEventHandler(w http.ResponseWriter, r *htt
 	}
 	eh.DbHandler.DeleteEvent(event)
 
-	deletedID, err := event.ID.MarshalJSON()
-	if err != nil {
-		http.Error(w, "error marshal ObjectID", http.StatusInternalServerError)
-		return
-	}
 	msg := contracts.EventDeletedEvent{
-		ID: deletedID,
+		ID: event.ID,
 	}
 	jsonDoc, err := json.Marshal(&msg)
 	if err != nil {

@@ -1,6 +1,6 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/agelloz/myevents v0.0.0-20200501175915-ad8ac8584951 h1:7E1zh+ph0jAXxZdBIg3I/CgSnREYLuRTtujA9f3kV20=
-github.com/agelloz/myevents v0.0.0-20200501175915-ad8ac8584951/go.mod h1:ucMik28LS2HQmDMRPZ8gacWiAidn5Dg+IM+xmVy9pbM=
+github.com/agelloz/myevents v0.0.0-20200502115633-254a3f63bb26 h1:cwc88rW6RwAHkC8DEw/zsKqduka6DgmMx8z5puqz7YE=
+github.com/agelloz/myevents v0.0.0-20200502115633-254a3f63bb26/go.mod h1:ucMik28LS2HQmDMRPZ8gacWiAidn5Dg+IM+xmVy9pbM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

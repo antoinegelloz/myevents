@@ -17,11 +17,15 @@ services:
     build: ./eventservice
     ports:
       - "8181:8181"
+    env_file:
+      - ./eventservice/.env
 
   bookingservice:
     build: ./bookingservice
     ports:
       - "8282:8282"
+    env_file:
+      - ./bookingservice/.env
 
   frontend: 
     build: ./frontend

@@ -2,15 +2,13 @@ package service
 
 import (
 	"encoding/json"
+	"github.com/agelloz/myevents/contracts"
+	"github.com/agelloz/myevents/eventservice/models"
+	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/agelloz/myevents/contracts"
-	"github.com/streadway/amqp"
-
-	"github.com/agelloz/myevents/eventservice/models"
 )
 
 func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,8 +39,6 @@ func (eh *EventsServiceHandler) AddEventHandler(w http.ResponseWriter, r *http.R
 	}
 
 	res := eh.DbHandler.AddEvent(&event)
-	log.Print(res)
-
 	msg := contracts.EventCreatedEvent{
 		ID:              [12]byte(res),
 		Name:            event.Name,
