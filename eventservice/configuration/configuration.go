@@ -10,7 +10,7 @@ import (
 
 var (
 	// DBTypeDefault is the default DB
-	DBTypeDefault = persistence.DBTYPE("mongodb")
+	DBTypeDefault = persistence.DBType("mongodb")
 	// DBConnectionDefault is the default connection
 	DBConnectionDefault = "mongodb://127.0.0.1"
 	// EndpointDefault is the default endpoint listening to HTTP
@@ -23,7 +23,7 @@ var (
 
 // ServiceConfig is
 type ServiceConfig struct {
-	DBType            persistence.DBTYPE `json:"dbType"`
+	DBType            persistence.DBType `json:"dbType"`
 	DBConnection      string             `json:"dbConnection"`
 	Endpoint          string             `json:"endpoint"`
 	TLSEndpoint       string             `json:"tlsEndpoint"`
@@ -39,15 +39,6 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		TLSEndpointDefault,
 		AMPQURLDefault,
 	}
-	if listenURL := os.Getenv("LISTEN_URL"); listenURL != "" {
-		conf.Endpoint = listenURL
-	}
-	if dbConn := os.Getenv("MONGODB_URL"); dbConn != "" {
-		conf.DBConnection = dbConn
-	}
-	if broker := os.Getenv("AMQP_BROKER_URL"); broker != "" {
-		conf.AMQPMessageBroker = broker
-	}
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Println("configuration file not found. Continuing with default values:")
@@ -55,5 +46,6 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		return conf, nil
 	}
 	err = json.NewDecoder(file).Decode(&conf)
+	log.Printf("%+v\n", conf)
 	return conf, err
 }

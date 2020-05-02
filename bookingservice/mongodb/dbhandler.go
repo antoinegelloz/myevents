@@ -56,15 +56,16 @@ func (mgoLayer *DBLayer) GetEventByID(ID string) *models.Event {
 }
 
 // GetEventByName returns an event
-func (mgoLayer *DBLayer) GetEventByName(name string) (e *models.Event) {
+func (mgoLayer *DBLayer) GetEventByName(name string) *models.Event {
+	var e models.Event
 	result := mgoLayer.client.Database(DB).Collection(EVENTS).FindOne(context.Background(), bson.M{"name": name})
-	err := result.Decode(e)
+	err := result.Decode(&e)
 	if err != nil {
 		log.Printf("GetEventByName: document not found: %+v: %s\n", name, err)
 		return nil
 	}
-	log.Println("GetEventByName: ", e)
-	return
+	log.Printf("GetEventByName: %+v\n", e)
+	return &e
 }
 
 // GetAllEvents returns all events

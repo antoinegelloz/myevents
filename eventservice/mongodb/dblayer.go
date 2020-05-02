@@ -1,26 +1,38 @@
 package mongodb
 
-import "gopkg.in/mgo.v2"
+import (
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
+	"time"
+)
 
 const (
 	// DB - database name
-	DB = "myevents"
-	// EVENTS - events
-	EVENTS = "events"
+	DB = "eventServiceDB"
+	// EVENTS - events collection
+	EVENTS = "eventsCollection"
 )
 
 // DBLayer is the MongoDB persistence layer
 type DBLayer struct {
-	session *mgo.Session
+	client *mongo.Client
 }
 
 // NewDBLayer is a constructor function to obtain a connection session handler to the desired MongoDB
-func NewDBLayer(connection string) (*DBLayer, error) {
-	s, err := mgo.Dial(connection)
+func NewDBLayer(uri string) *DBLayer {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
+	}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return &DBLayer{
-		session: s,
-	}, err
+		client: client,
+	}
 }

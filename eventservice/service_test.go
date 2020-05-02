@@ -15,15 +15,19 @@ import (
 )
 
 func TestSimple_API_Usage(t *testing.T) {
-	dbh, _ := persistence.NewPersistenceLayer(configuration.DBTypeDefault, configuration.DBConnectionDefault)
-	conn, err := amqp.Dial(configuration.AMPQURLDefault)
+	conf, err := configuration.ExtractConfiguration(".env")
+	if err != nil {
+		panic(err)
+	}
+	dbh := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	conn, err := amqp.Dial(conf.AMQPMessageBroker)
 	if err != nil {
 		panic(err)
 	}
 	var h = &service.EventsServiceHandler{
 		DbHandler:      dbh,
-		Endpoint:       configuration.EndpointDefault,
-		TLSEndpoint:    configuration.TLSEndpointDefault,
+		Endpoint:       conf.Endpoint,
+		TLSEndpoint:    conf.TLSEndpoint,
 		AMQPConnection: conn,
 	}
 

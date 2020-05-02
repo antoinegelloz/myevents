@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"time"
 )
 
 type BookingServiceHandler struct {
@@ -31,7 +32,14 @@ func ServeAPI() (chan error, chan error) {
 		panic(err)
 	}
 
-	dh := persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	var dh persistence.DBHandler
+	log.Println("connecting to database...")
+	dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	for dh == nil {
+		log.Printf("database connection error: %s\n", err)
+		time.Sleep(2000000000)
+		dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	}
 	log.Println("connected to database")
 
 	go listener.Listen(conf.AMQPMessageBroker, dh)

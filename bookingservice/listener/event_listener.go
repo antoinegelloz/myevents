@@ -96,6 +96,7 @@ func Listen(AMQPMessageBroker string, dh persistence.DBHandler) {
 func HandleEvent(dh persistence.DBHandler, event Event) {
 	switch e := event.(type) {
 	case *contracts.EventCreatedEvent:
+		log.Print(hex.EncodeToString(e.ID))
 		objID, err := primitive.ObjectIDFromHex(hex.EncodeToString(e.ID))
 		if err != nil {
 			log.Fatal(err)

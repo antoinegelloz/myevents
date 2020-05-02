@@ -42,12 +42,13 @@ func ServeAPI() (chan error, chan error) {
 
 	var dh persistence.DBHandler
 	log.Println("connecting to database...")
-	dh, err = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
-	for err != nil {
+	dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+	for dh == nil {
 		log.Printf("database connection error: %s\n", err)
 		time.Sleep(2000000000)
-		dh, err = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
+		dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	}
+	log.Println("connected to database")
 
 	eh := &EventsServiceHandler{
 		DbHandler:      dh,

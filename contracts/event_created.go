@@ -5,11 +5,10 @@ import (
 )
 
 type EventCreatedEvent struct {
-	ID              []byte    `json:"event_id"`
+	ID              [12]byte  `json:"event_id"`
 	Name            string    `json:"event_name"`
 	StartDate       time.Time `json:"start_date"`
 	EndDate         time.Time `json:"end_date"`
-	LocationID      []byte    `json:"location_id"`
 	LocationName    string    `json:"location_name"`
 	LocationCountry string    `json:"location_country"`
 }
