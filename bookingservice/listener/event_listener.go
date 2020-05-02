@@ -112,18 +112,10 @@ func HandleEvent(dh persistence.DBHandler, event Event) {
 		})
 		if newID != objID {
 			log.Printf("error while adding event to database: %s", err)
-		} else {
-			log.Printf("added event %s to database: %+v", hex.EncodeToString(e.ID), e)
 		}
 	case *contracts.EventDeletedEvent:
-		_, err := primitive.ObjectIDFromHex(hex.EncodeToString(e.ID))
-		if err != nil {
-			log.Printf("error while deleting event from database: invalid ID |%s|", hex.EncodeToString(e.ID))
-		} else {
-			foundEvent := dh.GetEventByID(hex.EncodeToString(e.ID))
-			dh.DeleteEvent(foundEvent)
-			log.Printf("deleted event %s from database: %+v", hex.EncodeToString(e.ID), e)
-		}
+		eventToDelete := dh.GetEventByID(hex.EncodeToString(e.ID))
+		dh.DeleteEvent(eventToDelete)
 	default:
 		log.Printf("unknown event: %t", e)
 	}

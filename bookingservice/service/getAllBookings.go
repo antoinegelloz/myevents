@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -13,5 +12,4 @@ func (eh *BookingServiceHandler) GetAllBookingsHandler(w http.ResponseWriter, r 
 	if err != nil {
 		http.Error(w, "Cannot encode all bookings to JSON", http.StatusInternalServerError)
 	}
-	log.Println("got all bookings")
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"net/smtp"
@@ -20,21 +21,31 @@ func (eh *BookingServiceHandler) AddBookingHandler(w http.ResponseWriter, r *htt
 		http.Error(w, fmt.Sprintf("Bad request to add new booking for event ID: %s", eventID), http.StatusBadRequest)
 		return
 	}
-
 	event := eh.DBHandler.GetEventByID(eventID)
-	log.Printf("got event to book by ID %s\n", event.ID)
-	newBooking := models.Booking{}
-	err := json.NewDecoder(r.Body).Decode(&newBooking)
-	if err != nil {
-		log.Println("cannot decode booking data")
-		http.Error(w, "cannot decode booking data", http.StatusInternalServerError)
+	if event == nil {
+		log.Println("AddBookingHandler: unknown event to book")
+		http.Error(w, "Unknown event to book", http.StatusInternalServerError)
 		return
 	}
+	var newBooking models.Booking
+	err := json.NewDecoder(r.Body).Decode(&newBooking)
+	if err != nil {
+		log.Println("AddBookingHandler: cannot decode booking data")
+		http.Error(w, "Cannot decode data to add booking", http.StatusInternalServerError)
+		return
+	}
+	newBooking.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	newBooking.EventID = event.ID
+	newBooking.UserID = primitive.NewObjectIDFromTimestamp(time.Now())
 	newBooking.Date = time.Now()
+	newBooking.Quantity = 1
 	objID := eh.DBHandler.AddBooking(&newBooking)
-	log.Printf("added new booking ID:%s for event ID:%s quantity:%d\n", objID.Hex(), newBooking.EventID.Hex(), newBooking.Quantity)
 
+	// Confirmation email
 	auth := smtp.PlainAuth("", eh.SMTPUsername, eh.SMTPPassword, eh.SMTPHost)
+	if newBooking.UserEmail == "" {
+		newBooking.UserEmail = eh.SMTPUsername
+	}
 	to := []string{newBooking.UserEmail}
 	msg := []byte("To: " + newBooking.UserEmail + "\r\n" +
 		"Subject: See you soon at " + event.Name + "!\r\n" +

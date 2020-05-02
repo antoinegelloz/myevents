@@ -9,14 +9,16 @@ import (
 
 func (eh *BookingServiceHandler) DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	eventID, ok := vars["eventID"]
+	bookingID, ok := vars["bookingID"]
 	if !ok {
 		http.Error(w, "Bad request (nameOrID)", http.StatusBadRequest)
 		return
 	}
-	booking := eh.DBHandler.GetBookingByID(eventID)
-	log.Printf("got event to delete a booking by ID %s\n", booking.ID)
-
+	booking := eh.DBHandler.GetBookingByID(bookingID)
+	if booking == nil {
+		log.Println("DeleteBookingHandler: unknown booking ID")
+		http.Error(w, "Unknown booking to delete", http.StatusInternalServerError)
+		return
+	}
 	eh.DBHandler.DeleteBooking(booking)
-	log.Printf("deleted booking from database ID:%s\n", booking.ID)
 }

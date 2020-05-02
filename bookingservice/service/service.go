@@ -52,7 +52,7 @@ func ServeAPI() (chan error, chan error) {
 	s.Methods("DELETE").Path("").HandlerFunc(eh.DeleteAllEventsHandler)
 	s.Methods("GET").Path("/bookings").HandlerFunc(eh.GetAllBookingsHandler)
 	s.Methods("POST").Path("/bookings/{eventID}").HandlerFunc(eh.AddBookingHandler)
-	s.Methods("DELETE").Path("/bookings/{eventID}").HandlerFunc(eh.DeleteBookingHandler)
+	s.Methods("DELETE").Path("/bookings/{bookingID}").HandlerFunc(eh.DeleteBookingHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
 	log.Println("bookingService listening...")

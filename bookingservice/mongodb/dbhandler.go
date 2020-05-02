@@ -13,9 +13,9 @@ import (
 func (mgoLayer *DBLayer) AddEvent(e *models.Event) primitive.ObjectID {
 	res, err := mgoLayer.client.Database(DB).Collection(EVENTS).InsertOne(context.TODO(), e)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("AddEvent: %s\n", err)
 	}
-	log.Println("AddEvent: inserted a single document: ", res.InsertedID)
+	log.Printf("AddEvent: inserted a single document: %+v\n", mgoLayer.GetEventByID(res.InsertedID.(primitive.ObjectID).Hex()))
 	return res.InsertedID.(primitive.ObjectID)
 }
 
@@ -23,16 +23,16 @@ func (mgoLayer *DBLayer) AddEvent(e *models.Event) primitive.ObjectID {
 func (mgoLayer *DBLayer) DeleteEvent(e *models.Event) {
 	deleteResult, err := mgoLayer.client.Database(DB).Collection(EVENTS).DeleteOne(context.TODO(), bson.M{"_id": e.ID})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("DeleteEvent: %s\n", err)
 	}
-	log.Printf("DeleteEvent: deleted %v documents\n", deleteResult.DeletedCount)
+	log.Printf("DeleteEvent: deleted %v documents: %s\n", deleteResult.DeletedCount, e.ID)
 }
 
 // DeleteAllEvents deletes all events
 func (mgoLayer *DBLayer) DeleteAllEvents() {
 	deleteResult, err := mgoLayer.client.Database(DB).Collection(EVENTS).DeleteMany(context.TODO(), bson.D{{}})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("DeleteAllEvent: %s\n", err)
 	}
 	log.Printf("DeleteAllEvents: deleted %v documents\n", deleteResult.DeletedCount)
 }
@@ -40,7 +40,7 @@ func (mgoLayer *DBLayer) DeleteAllEvents() {
 // GetEventByID returns an event
 func (mgoLayer *DBLayer) GetEventByID(ID string) *models.Event {
 	eventID, err := primitive.ObjectIDFromHex(ID)
-	if err != nil{
+	if err != nil {
 		log.Println("GetEventByID: invalid ObjectID: ", ID)
 		return nil
 	}
@@ -48,9 +48,10 @@ func (mgoLayer *DBLayer) GetEventByID(ID string) *models.Event {
 	result := mgoLayer.client.Database(DB).Collection(EVENTS).FindOne(context.Background(), bson.M{"_id": eventID})
 	err = result.Decode(&e)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("GetEventByID: document not found: %+v: %s\n", eventID, err)
+		return nil
 	}
-	log.Println("GetEventByID: ", e)
+	log.Printf("GetEventByID: %+v\n", e)
 	return &e
 }
 
@@ -59,7 +60,8 @@ func (mgoLayer *DBLayer) GetEventByName(name string) (e *models.Event) {
 	result := mgoLayer.client.Database(DB).Collection(EVENTS).FindOne(context.Background(), bson.M{"name": name})
 	err := result.Decode(e)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("GetEventByName: document not found: %+v: %s\n", name, err)
+		return nil
 	}
 	log.Println("GetEventByName: ", e)
 	return
@@ -69,18 +71,18 @@ func (mgoLayer *DBLayer) GetEventByName(name string) (e *models.Event) {
 func (mgoLayer *DBLayer) GetAllEvents() (e []*models.Event) {
 	cur, err := mgoLayer.client.Database(DB).Collection(EVENTS).Find(context.TODO(), bson.D{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("GetAllEvent: %s\n", err)
 	}
 	for cur.Next(context.TODO()) {
 		var elem models.Event
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("GetAllEvent: %s\n", err)
 		}
 		e = append(e, &elem)
 	}
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("GetAllEvent: %s\n", err)
 	}
 	cur.Close(context.TODO())
 	fmt.Printf("Found multiple documents (array of pointers): %+v\n", e)
@@ -91,7 +93,7 @@ func (mgoLayer *DBLayer) GetAllEvents() (e []*models.Event) {
 func (mgoLayer *DBLayer) AddBooking(b *models.Booking) primitive.ObjectID {
 	res, err := mgoLayer.client.Database(DB).Collection(BOOKINGS).InsertOne(context.TODO(), b)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("AddBooking: %s\n", err)
 	}
 	log.Println("AddBooking: inserted a single document: ", res.InsertedID)
 	return res.InsertedID.(primitive.ObjectID)
@@ -99,29 +101,29 @@ func (mgoLayer *DBLayer) AddBooking(b *models.Booking) primitive.ObjectID {
 
 // DeleteBooking deletes a booking
 func (mgoLayer *DBLayer) DeleteBooking(b *models.Booking) {
-	deleteResult, err := mgoLayer.client.Database(DB).Collection(BOOKINGS).DeleteOne(context.TODO(), b)
-	log.Printf("DeleteBooking: deleted %v documents\n", deleteResult.DeletedCount)
+	deleteResult, err := mgoLayer.client.Database(DB).Collection(BOOKINGS).DeleteOne(context.TODO(), bson.M{"_id": b.ID})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("DeleteBooking: %s\n", err)
 	}
+	log.Printf("DeleteBooking: deleted %v documents: %s\n", deleteResult.DeletedCount, b.ID)
 }
 
 // GetAllBookings returns all bookings
 func (mgoLayer *DBLayer) GetAllBookings() (b []*models.Booking) {
 	cur, err := mgoLayer.client.Database(DB).Collection(BOOKINGS).Find(context.TODO(), bson.D{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("GetAllBooking: %s\n", err)
 	}
 	for cur.Next(context.TODO()) {
 		var elem models.Booking
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("GetAllBooking: %s\n", err)
 		}
 		b = append(b, &elem)
 	}
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("GetAllBooking: %s\n", err)
 	}
 	cur.Close(context.TODO())
 	fmt.Printf("Found multiple documents (array of pointers): %+v\n", b)
@@ -129,17 +131,19 @@ func (mgoLayer *DBLayer) GetAllBookings() (b []*models.Booking) {
 }
 
 // GetBookingByID returns an booking
-func (mgoLayer *DBLayer) GetBookingByID(ID string) (b *models.Booking) {
+func (mgoLayer *DBLayer) GetBookingByID(ID string) *models.Booking {
 	bookingID, err := primitive.ObjectIDFromHex(ID)
-	if err != nil{
-		log.Println("GetBookingByID: invalid ObjectID: ", ID)
-		return
-	}
-	result := mgoLayer.client.Database(DB).Collection(BOOKINGS).FindOne(context.Background(), bson.M{"_id": bookingID})
-	err = result.Decode(b)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("GetBookingByID: invalid ObjectID: ", ID)
+		return nil
 	}
-	log.Println("GetEventByID: ", b)
-	return
+	var b models.Booking
+	result := mgoLayer.client.Database(DB).Collection(BOOKINGS).FindOne(context.Background(), bson.M{"_id": bookingID})
+	err = result.Decode(&b)
+	if err != nil {
+		log.Printf("GetBookingByID: document not found: %+v: %s\n", bookingID, err)
+		return nil
+	}
+	log.Printf("GetBookingByID: %+v\n", b)
+	return &b
 }
