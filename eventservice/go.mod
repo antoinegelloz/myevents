@@ -6,6 +6,7 @@ require (
 	github.com/agelloz/myevents v0.0.0-20200502135310-4fa85de50c0a
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
+	github.com/joho/godotenv v1.3.0
 	github.com/klauspost/compress v1.10.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71

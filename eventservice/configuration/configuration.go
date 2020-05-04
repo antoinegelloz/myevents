@@ -1,7 +1,7 @@
 package configuration
 
 import (
-	"encoding/json"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 
@@ -31,7 +31,7 @@ type ServiceConfig struct {
 }
 
 // ExtractConfiguration is
-func ExtractConfiguration(filename string) (ServiceConfig, error) {
+func ExtractConfiguration() (ServiceConfig, error) {
 	conf := ServiceConfig{
 		DBTypeDefault,
 		DBConnectionDefault,
@@ -39,28 +39,23 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		TLSEndpointDefault,
 		AMPQURLDefault,
 	}
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Println("configuration file not found. Continuing with default or env values:")
-		if os.Getenv("DBTYPE") != "" {
-			conf.DBType = persistence.DBType(os.Getenv("DBTYPE"))
-		}
-		if os.Getenv("DBCONNECTION") != "" {
-			conf.DBConnection = os.Getenv("DBCONNECTION")
-		}
-		if os.Getenv("ENDPOINT") != "" {
-			conf.Endpoint = os.Getenv("ENDPOINT")
-		}
-		if os.Getenv("TLSENDPOINT") != "" {
-			conf.TLSEndpoint = os.Getenv("TLSENDPOINT")
-		}
-		if os.Getenv("AMQP_MESSAGE_BROKER") != "" {
-			conf.AMQPMessageBroker = os.Getenv("AMQP_MESSAGE_BROKER")
-		}
-		log.Printf("%+v\n", conf)
-		return conf, nil
+
+	_ = godotenv.Load()
+	if os.Getenv("DBTYPE") != "" {
+		conf.DBType = persistence.DBType(os.Getenv("DBTYPE"))
 	}
-	err = json.NewDecoder(file).Decode(&conf)
+	if os.Getenv("DBCONNECTION") != "" {
+		conf.DBConnection = os.Getenv("DBCONNECTION")
+	}
+	if os.Getenv("ENDPOINT") != "" {
+		conf.Endpoint = os.Getenv("ENDPOINT")
+	}
+	if os.Getenv("TLSENDPOINT") != "" {
+		conf.TLSEndpoint = os.Getenv("TLSENDPOINT")
+	}
+	if os.Getenv("AMQP_MESSAGE_BROKER") != "" {
+		conf.AMQPMessageBroker = os.Getenv("AMQP_MESSAGE_BROKER")
+	}
 	log.Printf("%+v\n", conf)
-	return conf, err
+	return conf, nil
 }

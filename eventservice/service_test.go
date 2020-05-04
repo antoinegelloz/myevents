@@ -15,7 +15,7 @@ import (
 )
 
 func TestSimple_API_Usage(t *testing.T) {
-	conf, err := configuration.ExtractConfiguration(".env")
+	conf, err := configuration.ExtractConfiguration()
 	if err != nil {
 		panic(err)
 	}

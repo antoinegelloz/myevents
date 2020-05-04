@@ -23,8 +23,8 @@ func Listen(AMQPMessageBroker string, dh persistence.DBHandler) {
 	log.Println("connecting to AMQP message broker...")
 	conn, err = amqp.Dial(AMQPMessageBroker)
 	for err != nil {
-		log.Printf("AMQP connection error: %s\n", err)
-		time.Sleep(2000000000)
+		log.Printf("AMQP dialing: %s\n", err)
+		time.Sleep(4000000000)
 		conn, err = amqp.Dial(AMQPMessageBroker)
 	}
 	defer conn.Close()

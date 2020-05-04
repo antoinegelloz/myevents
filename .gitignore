@@ -15,7 +15,9 @@
 # vendor/
 #
 .idea/*
+.storybook/*
 
-front/node_modules/*
+frontend/node_modules/*
+frontend/.env
 eventservice/.env
 bookingservice/.env

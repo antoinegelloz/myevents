@@ -45,9 +45,7 @@ export default function BookingForm(props: BookingFormProps) {
             if(response.ok) {
                 setResult({ status: 'done' })
             }
-        }).catch(function(error) {
-            setResult({ status: 'error', error })
-        })
+        }).catch(error => setResult({ status: 'error', error }));
     }
 
     useEffect(() => {

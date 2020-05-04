@@ -1,7 +1,6 @@
 package service
 
 import (
-	"flag"
 	"github.com/agelloz/myevents/bookingservice/configuration"
 	"github.com/agelloz/myevents/bookingservice/listener"
 	"github.com/agelloz/myevents/bookingservice/persistence"
@@ -24,10 +23,7 @@ type BookingServiceHandler struct {
 
 // ServeAPI is
 func ServeAPI() (chan error, chan error) {
-	confPath := flag.String("conf", `.\configuration\config.json`,
-		"flag to set the path to the configuration json file")
-	flag.Parse()
-	conf, err := configuration.ExtractConfiguration(*confPath)
+	conf, err := configuration.ExtractConfiguration()
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +33,7 @@ func ServeAPI() (chan error, chan error) {
 	dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	for dh == nil {
 		log.Printf("database connection error: %s\n", err)
-		time.Sleep(2000000000)
+		time.Sleep(4000000000)
 		dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	}
 	log.Println("connected to database")
@@ -63,7 +59,7 @@ func ServeAPI() (chan error, chan error) {
 	s.Methods("DELETE").Path("/bookings/{bookingID}").HandlerFunc(eh.DeleteBookingHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
-	log.Println("bookingService listening...")
+	log.Printf("bookingservice listening to %s & %s...", eh.Endpoint, eh.TLSEndpoint)
 	server := handlers.CORS()(r)
 	go func() {
 		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", server)

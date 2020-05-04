@@ -1,7 +1,6 @@
 package service
 
 import (
-	"flag"
 	"log"
 	"net/http"
 	"time"
@@ -23,21 +22,9 @@ type EventsServiceHandler struct {
 
 // ServeAPI is
 func ServeAPI() (chan error, chan error) {
-	confPath := flag.String("conf", `.\configuration\config.json`,
-		"flag to set the path to the configuration json file")
-	flag.Parse()
-	conf, err := configuration.ExtractConfiguration(*confPath)
+	conf, err := configuration.ExtractConfiguration()
 	if err != nil {
 		panic(err)
-	}
-
-	var conn *amqp.Connection
-	log.Println("connecting to AMQP message broker...")
-	conn, err = amqp.Dial(conf.AMQPMessageBroker)
-	for err != nil {
-		log.Printf("AMQP connection error: %s\n", err)
-		time.Sleep(2000000000)
-		conn, err = amqp.Dial(conf.AMQPMessageBroker)
 	}
 
 	var dh persistence.DBHandler
@@ -45,10 +32,20 @@ func ServeAPI() (chan error, chan error) {
 	dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	for dh == nil {
 		log.Printf("database connection error: %s\n", err)
-		time.Sleep(2000000000)
+		time.Sleep(4000000000)
 		dh = persistence.NewPersistenceLayer(conf.DBType, conf.DBConnection)
 	}
 	log.Println("connected to database")
+
+	var conn *amqp.Connection
+	log.Println("connecting to AMQP message broker...")
+	conn, err = amqp.Dial(conf.AMQPMessageBroker)
+	for err != nil {
+		log.Printf("AMQP dialing: %s\n", err)
+		time.Sleep(4000000000)
+		conn, err = amqp.Dial(conf.AMQPMessageBroker)
+	}
+	log.Println("connected to AMQP message broker")
 
 	eh := &EventsServiceHandler{
 		DbHandler:      dh,
@@ -65,7 +62,7 @@ func ServeAPI() (chan error, chan error) {
 	s.Methods("DELETE").Path("/{nameOrID}/{nameOrIDValue}").HandlerFunc(eh.DeleteEventHandler)
 	httpErrChan := make(chan error)
 	httpsErrChan := make(chan error)
-	log.Println("eventsService listening...")
+	log.Printf("eventservice listening to %s & %s...", eh.Endpoint, eh.TLSEndpoint)
 	server := handlers.CORS()(r)
 	go func() {
 		httpsErrChan <- http.ListenAndServeTLS(eh.TLSEndpoint, "certificate/cert.pem", "certificate/key.pem", server)

@@ -5,10 +5,19 @@ import BookingForm from './BookingForm';
 import event from './event.jpg';
 
 export default function App() {
-    const eventList = () => <EventList eventserviceURL="http://localhost:8181" />
+    var ES_URL = "http://localhost:8181"
+    if (process.env.REACT_APP_EVENTSERVICE_URL !== undefined) {
+      ES_URL = process.env.REACT_APP_EVENTSERVICE_URL
+    }
+    var BS_URL = "http://localhost:8282"
+    if (process.env.REACT_APP_BOOKINGSERVICE_URL !== undefined) {
+      BS_URL = process.env.REACT_APP_BOOKINGSERVICE_URL
+    }
+
+    const eventList = () => <EventList eventserviceURL={ES_URL} />
     const eventBooking = ({match}: any) => <BookingForm eventID={match.params.id} 
-      eventserviceURL="http://localhost:8181"
-      bookingserviceURL="http://localhost:8282"/>; 
+      eventserviceURL={ES_URL}
+      bookingserviceURL={BS_URL}/>;
 
     const img = {
       width: '100%',

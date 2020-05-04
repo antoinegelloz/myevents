@@ -1,11 +1,11 @@
 package configuration
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 
 	"github.com/agelloz/myevents/bookingservice/persistence"
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -35,7 +35,7 @@ type ServiceConfig struct {
 }
 
 // ExtractConfiguration is
-func ExtractConfiguration(filename string) (ServiceConfig, error) {
+func ExtractConfiguration() (ServiceConfig, error) {
 	conf := ServiceConfig{
 		DBTypeDefault,
 		DBConnectionDefault,
@@ -47,40 +47,35 @@ func ExtractConfiguration(filename string) (ServiceConfig, error) {
 		"",
 		"",
 	}
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Println("configuration file not found. Continuing with default or env values:")
-		if os.Getenv("DBTYPE") != "" {
-			conf.DBType = persistence.DBType(os.Getenv("DBTYPE"))
-		}
-		if os.Getenv("DBCONNECTION") != "" {
-			conf.DBConnection = os.Getenv("DBCONNECTION")
-		}
-		if os.Getenv("ENDPOINT") != "" {
-			conf.Endpoint = os.Getenv("ENDPOINT")
-		}
-		if os.Getenv("TLSENDPOINT") != "" {
-			conf.TLSEndpoint = os.Getenv("TLSENDPOINT")
-		}
-		if os.Getenv("AMQP_MESSAGE_BROKER") != "" {
-			conf.AMQPMessageBroker = os.Getenv("AMQP_MESSAGE_BROKER")
-		}
-		if os.Getenv("SMTP_USERNAME") != "" {
-			conf.SMTPUsername = os.Getenv("SMTP_USERNAME")
-		}
-		if os.Getenv("SMTP_PASSWORD") != "" {
-			conf.SMTPPassword = os.Getenv("SMTP_PASSWORD")
-		}
-		if os.Getenv("SMTP_HOST") != "" {
-			conf.SMTPHost = os.Getenv("SMTP_HOST")
-		}
-		if os.Getenv("SMTP_ADDR") != "" {
-			conf.SMTPAddr = os.Getenv("SMTP_ADDR")
-		}
-		log.Printf("%+v\n", conf)
-		return conf, nil
+
+	_ = godotenv.Load()
+	if os.Getenv("DBTYPE") != "" {
+		conf.DBType = persistence.DBType(os.Getenv("DBTYPE"))
 	}
-	err = json.NewDecoder(file).Decode(&conf)
+	if os.Getenv("DBCONNECTION") != "" {
+		conf.DBConnection = os.Getenv("DBCONNECTION")
+	}
+	if os.Getenv("ENDPOINT") != "" {
+		conf.Endpoint = os.Getenv("ENDPOINT")
+	}
+	if os.Getenv("TLSENDPOINT") != "" {
+		conf.TLSEndpoint = os.Getenv("TLSENDPOINT")
+	}
+	if os.Getenv("AMQP_MESSAGE_BROKER") != "" {
+		conf.AMQPMessageBroker = os.Getenv("AMQP_MESSAGE_BROKER")
+	}
+	if os.Getenv("SMTP_USERNAME") != "" {
+		conf.SMTPUsername = os.Getenv("SMTP_USERNAME")
+	}
+	if os.Getenv("SMTP_PASSWORD") != "" {
+		conf.SMTPPassword = os.Getenv("SMTP_PASSWORD")
+	}
+	if os.Getenv("SMTP_HOST") != "" {
+		conf.SMTPHost = os.Getenv("SMTP_HOST")
+	}
+	if os.Getenv("SMTP_ADDR") != "" {
+		conf.SMTPAddr = os.Getenv("SMTP_ADDR")
+	}
 	log.Printf("%+v\n", conf)
-	return conf, err
+	return conf, nil
 }

@@ -1,6 +1,4 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/agelloz/myevents v0.0.0-20200502115633-254a3f63bb26 h1:cwc88rW6RwAHkC8DEw/zsKqduka6DgmMx8z5puqz7YE=
-github.com/agelloz/myevents v0.0.0-20200502115633-254a3f63bb26/go.mod h1:ucMik28LS2HQmDMRPZ8gacWiAidn5Dg+IM+xmVy9pbM=
 github.com/agelloz/myevents v0.0.0-20200502135310-4fa85de50c0a h1:OhFUloMUz21Dd7n8vBMASTuPTvniJSKymubSEsC+WI8=
 github.com/agelloz/myevents v0.0.0-20200502135310-4fa85de50c0a/go.mod h1:ucMik28LS2HQmDMRPZ8gacWiAidn5Dg+IM+xmVy9pbM=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
@@ -42,6 +40,7 @@ github.com/gorilla/handlers v1.4.2/go.mod h1:Qkdc/uu4tH4g6mTK6auzZ766c4CA0Ng8+o/
 github.com/gorilla/mux v1.7.4 h1:VuZ8uybHlWmqV03+zRzdwKL4tUnIp1MAQtp1mIFE1bc=
 github.com/gorilla/mux v1.7.4/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
+github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaRPx4tDPEn4=
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=

@@ -55,7 +55,7 @@ export default function EventList(props: EventListProps) {
         (<Grid container className={classes.root} spacing={2}>
             <Grid item xs={12}>
                 <Grid container justify="center" spacing={2}>
-                    {result.payload.map((event) => (
+                    {result.payload != null && result.payload.map((event) => (
                     <Grid item>
                         <Card className={classes.card}>
                             <CardContent className={classes.cardText}>
